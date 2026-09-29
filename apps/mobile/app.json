@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "CATCHAM Whistleblower & Incident Reporter",
+    "slug": "catcham-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#064e3b"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "CATCHAM requires GPS to accurately route your report to the correct Nigerian jurisdiction."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow CATCHAM to capture digital evidence photos/videos."
+        }
+      ]
+    ]
+  }
+}

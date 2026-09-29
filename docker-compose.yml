@@ -1,0 +1,74 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: catcham-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: catcham
+      POSTGRES_PASSWORD: catcham_secure_pwd
+      POSTGRES_DB: catcham_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init-postgis.sh:/docker-entrypoint-initdb.d/init-postgis.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U catcham -d catcham_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: catcham-redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "catcham_redis_secret"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "catcham_redis_secret", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  storage:
+    image: minio/minio:RELEASE.2024-05-28T17-19-04Z
+    container_name: catcham-storage
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - storage_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ai-service:
+    build:
+      context: ./services/ai
+      dockerfile: Dockerfile
+    container_name: catcham-ai-service
+    restart: unless-stopped
+    environment:
+      - PORT=8000
+      - AI_API_KEY=catcham_ai_internal_token
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
+  redis_data:
+  storage_data:

@@ -1,0 +1,31 @@
+{
+  "name": "catcham",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nigerian Multi-Agency Whistleblowing, Incident Reporting, Investigation, Evidence & Case Management Platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:e2e": "playwright test",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "ts-node --transpile-only prisma/seed.ts",
+    "db:up": "docker compose up -d postgres redis storage",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,py}\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "prettier": "^3.3.0",
+    "prisma": "^5.18.0",
+    "ts-node": "^10.9.2",
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.0"
+  },
+  "packageManager": "pnpm@10.23.0"
+}

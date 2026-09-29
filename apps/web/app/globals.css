@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #FFFFFF;
+  --foreground: #111111;
+  --brand-primary: #006B3C;
+}
+
+@layer base {
+  * {
+    @apply border-neutral-200;
+  }
+  body {
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
+  }
+}

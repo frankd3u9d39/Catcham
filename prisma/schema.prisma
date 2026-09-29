@@ -1,0 +1,394 @@
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+// --------------------------------------------------------
+// IDENTITY & ACCESS CONTROL
+// --------------------------------------------------------
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+  PENDING_VERIFICATION
+}
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  fullName        String
+  passwordHash    String
+  phoneNumber     String?
+  status          AccountStatus  @default(ACTIVE)
+  isMfaEnabled    Boolean        @default(false)
+  mfaSecret       String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  sessions        Session[]
+  memberships     Membership[]
+  assignedCases   InvestigationAssignment[]
+  auditLogs       AuditLog[]
+
+  @@map("users")
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  code        String           @unique
+  name        String
+  description String?
+  isSystem    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  permissions RolePermission[]
+  memberships Membership[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  slug        String           @unique
+  resource    String
+  action      String
+  description String?
+
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Session {
+  id               String   @id @default(uuid())
+  userId           String
+  refreshTokenHash String
+  ipAddress        String?
+  userAgent        String?
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// --------------------------------------------------------
+// ORGANIZATION HIERARCHY & JURISDICTIONS
+// --------------------------------------------------------
+enum AgencyCategory {
+  LAW_ENFORCEMENT
+  REGULATORY
+  EMERGENCY
+  ENERGY
+  CIVIL_AUTHORITY
+  PRIVATE_PARTNER
+}
+
+model Agency {
+  id                String          @id @default(uuid())
+  code              String          @unique
+  name              String
+  acronym           String
+  category          AgencyCategory
+  jurisdictionScope String          @default("NATIONAL")
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  departments       Department[]
+  memberships       Membership[]
+  investigations    Investigation[]
+
+  @@map("agencies")
+}
+
+model Department {
+  id        String   @id @default(uuid())
+  agencyId  String
+  name      String
+  code      String
+  createdAt DateTime @default(now())
+
+  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  offices   Office[]
+
+  @@unique([agencyId, code])
+  @@map("departments")
+}
+
+model Office {
+  id           String      @id @default(uuid())
+  departmentId String
+  name         String
+  state        String
+  lga          String
+  address      String?
+  createdAt    DateTime    @default(now())
+
+  department   Department  @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@map("offices")
+}
+
+model Jurisdiction {
+  id          String   @id @default(uuid())
+  name        String
+  level       String   // FEDERAL, STATE, LGA, SPECIAL_DISTRICT
+  stateCode   String?
+  lgaCode     String?
+  createdAt   DateTime @default(now())
+
+  @@map("jurisdictions")
+}
+
+model Membership {
+  id           String    @id @default(uuid())
+  userId       String
+  agencyId     String
+  roleId       String
+  isDelegated  Boolean   @default(false)
+  validUntil   DateTime?
+  createdAt    DateTime  @default(now())
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency       Agency    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  role         Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agencyId, roleId])
+  @@map("memberships")
+}
+
+// --------------------------------------------------------
+// INCIDENT REPORTING & WHISTLEBLOWING
+// --------------------------------------------------------
+model ReportCategory {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+
+  reports     Report[]
+
+  @@map("report_categories")
+}
+
+model Report {
+  id               String          @id @default(uuid())
+  referenceNumber  String          @unique
+  title            String
+  description      String
+  categoryId       String
+  isAnonymous      Boolean         @default(true)
+  submitterId      String?
+  state            String?
+  lga              String?
+  latitude         Float?
+  longitude        Float?
+  currentStatus    String          @default("SUBMITTED")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  category         ReportCategory  @relation(fields: [categoryId], references: [id])
+  timeline         ReportTimeline[]
+  investigations   Investigation[]
+  evidence         Evidence[]
+
+  @@map("reports")
+}
+
+model ReportTimeline {
+  id          String   @id @default(uuid())
+  reportId    String
+  action      String
+  description String
+  actorType   String
+  actorId     String?
+  createdAt   DateTime @default(now())
+
+  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@map("report_timelines")
+}
+
+// --------------------------------------------------------
+// INVESTIGATION & CASE MANAGEMENT
+// --------------------------------------------------------
+model Investigation {
+  id            String                    @id @default(uuid())
+  caseNumber    String                    @unique
+  reportId      String
+  agencyId      String
+  supervisorId  String
+  priority      String                    @default("MEDIUM")
+  status        String                    @default("INITIATED")
+  closedAt      DateTime?
+  closedReason  String?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  report        Report                    @relation(fields: [reportId], references: [id])
+  agency        Agency                    @relation(fields: [agencyId], references: [id])
+  assignments   InvestigationAssignment[]
+  tasks         InvestigationTask[]
+  notes         InvestigationNote[]
+  evidence      Evidence[]
+
+  @@map("investigations")
+}
+
+model InvestigationAssignment {
+  id               String        @id @default(uuid())
+  investigationId  String
+  investigatorId   String
+  role             String        // LEAD, ASSISTANT, SPECIALIST
+  assignedAt       DateTime      @default(now())
+  isActive         Boolean       @default(true)
+
+  investigation    Investigation @relation(fields: [investigationId], references: [id], onDelete: Cascade)
+  investigator     User          @relation(fields: [investigatorId], references: [id])
+
+  @@map("investigation_assignments")
+}
+
+model InvestigationTask {
+  id              String        @id @default(uuid())
+  investigationId String
+  assignedToId    String
+  title           String
+  description     String?
+  status          String        @default("PENDING")
+  dueDate         DateTime?
+  createdAt       DateTime      @default(now())
+
+  investigation   Investigation @relation(fields: [investigationId], references: [id], onDelete: Cascade)
+
+  @@map("investigation_tasks")
+}
+
+model InvestigationNote {
+  id              String        @id @default(uuid())
+  investigationId String
+  authorId        String
+  content         String
+  isConfidential  Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+
+  investigation   Investigation @relation(fields: [investigationId], references: [id], onDelete: Cascade)
+
+  @@map("investigation_notes")
+}
+
+// --------------------------------------------------------
+// EVIDENCE & IMMUTABLE CHAIN OF CUSTODY
+// --------------------------------------------------------
+model Evidence {
+  id               String             @id @default(uuid())
+  originalFileName String
+  storageKey       String
+  bucket           String
+  mimeType         String
+  sizeBytes        BigInt
+  sha256Hash       String
+  reportId         String?
+  investigationId  String?
+  classification   String             @default("CONFIDENTIAL")
+  isArchived       Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+
+  report           Report?            @relation(fields: [reportId], references: [id])
+  investigation    Investigation?     @relation(fields: [investigationId], references: [id])
+  custodyRecords   CustodyRecord[]
+  annotations      EvidenceAnnotation[]
+
+  @@map("evidence")
+}
+
+model CustodyRecord {
+  id              String   @id @default(uuid())
+  evidenceId      String
+  action          String   // INTAKE, TRANSFERRED, VIEWED, EXPORTED, AI_PROCESSED
+  performedById   String
+  transferredToId String?
+  reason          String
+  timestamp       DateTime @default(now())
+  ipAddress       String?
+
+  evidence        Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@map("custody_records")
+}
+
+model EvidenceAnnotation {
+  id             String   @id @default(uuid())
+  evidenceId     String
+  authorId       String
+  annotationText String
+  metadataJson   String?
+  createdAt      DateTime @default(now())
+
+  evidence       Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  @@map("evidence_annotations")
+}
+
+// --------------------------------------------------------
+// WORKFLOWS, RULES & COMPLIANCE AUDIT
+// --------------------------------------------------------
+model WorkflowDefinition {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  version      Int      @default(1)
+  initialState String
+  statesJson   String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  @@map("workflow_definitions")
+}
+
+model BusinessRule {
+  id             String   @id @default(uuid())
+  name           String
+  category       String
+  conditionsJson String
+  action         String
+  priority       Int      @default(100)
+  isEnabled      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  @@map("business_rules")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorId      String
+  action       String
+  resource     String
+  resourceId   String
+  metadataJson String?
+  ipAddress    String?
+  timestamp    DateTime @default(now())
+
+  actor        User     @relation(fields: [actorId], references: [id])
+
+  @@map("audit_logs")
+}
