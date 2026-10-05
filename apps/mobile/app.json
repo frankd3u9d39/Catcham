@@ -1,27 +1,43 @@
 {
   "expo": {
-    "name": "CATCHAM Whistleblower & Incident Reporter",
+    "name": "CATCHAM",
     "slug": "catcham-mobile",
     "version": "1.0.0",
+    "scheme": "catcham",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#064e3b"
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#006B3C"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ng.catcham.mobile"
+    },
+    "android": {
+      "package": "ng.catcham.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#006B3C"
+      }
     },
     "plugins": [
+      "expo-router",
+      "expo-secure-store",
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "CATCHAM requires GPS to accurately route your report to the correct Nigerian jurisdiction."
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow CATCHAM to capture digital evidence photos/videos."
+          "locationWhenInUsePermission": "CATCHAM uses your location to route your report to the right agency. You can submit without it."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:4000/api/v1"
+    }
   }
 }

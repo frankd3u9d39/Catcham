@@ -1,5 +1,9 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "prisma/schema.prisma",
+    ".env"
+  ],
   "tasks": {
     "build": {
       "dependsOn": [
@@ -11,22 +15,16 @@
         "dist/**"
       ]
     },
-    "lint": {
+    "typecheck": {
       "dependsOn": [
-        "^lint"
+        "^build"
       ]
     },
+    "lint": {},
     "dev": {
       "cache": false,
       "persistent": true
     },
-    "test": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "coverage/**"
-      ]
-    }
+    "test": {}
   }
 }

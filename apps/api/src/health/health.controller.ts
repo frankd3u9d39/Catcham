@@ -1,16 +1,31 @@
 import { Controller, Get } from '@nestjs/common';
-import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { PrismaService } from '../database/prisma.service';
+import { Public } from '../common/decorators/permissions.decorator';
 
+@ApiTags('Health')
 @Controller('health')
 export class HealthController {
-  constructor(private health: HealthCheckService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
+  @Public()
   @Get()
-  @HealthCheck()
-  check() {
+  @ApiOperation({ summary: 'Liveness and database reachability' })
+  async check() {
+    const startedAt = Date.now();
+    let database: 'up' | 'down' = 'up';
+
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+    } catch {
+      database = 'down';
+    }
+
     return {
-      status: 'ok',
-      service: 'catcham-api',
+      status: database === 'up' ? 'ok' : 'degraded',
+      database,
+      databaseLatencyMs: Date.now() - startedAt,
+      uptimeSeconds: Math.floor(process.uptime()),
       timestamp: new Date().toISOString(),
     };
   }

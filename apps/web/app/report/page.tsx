@@ -1,380 +1,448 @@
 'use client';
-import React, { useState } from 'react';
+
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { AlertTriangle, ArrowLeft, Check, Copy, Crosshair, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Shield, ArrowRight, ArrowLeft, Check, Upload, MapPin, Calendar, Lock, AlertCircle, FileCheck } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { InlineError } from '@/components/ui/error-state';
+import { useReportCategories } from '@/hooks/use-reports';
+import { useJurisdictions } from '@/hooks/use-platform';
+import { api } from '@/lib/api-client';
+import type { SubmissionReceipt } from '@/lib/types';
 
-const STEPS = [
-  { id: 1, title: 'What Happened?' },
-  { id: 2, title: 'Where Did It Happen?' },
-  { id: 3, title: 'When Did It Happen?' },
-  { id: 4, title: 'Add Evidence' },
-  { id: 5, title: 'Details & Narrative' },
-  { id: 6, title: 'Anonymity Preference' },
-  { id: 7, title: 'Review Report' },
-  { id: 8, title: 'Receipt & Secret' },
-];
+const DRAFT_KEY_STORAGE = 'catcham.draftKey';
 
-export default function GuidedReportingWizard() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [submittedRef, setSubmittedRef] = useState<string | null>(null);
+export default function SubmitReportPage() {
+  const { data: categories = [] } = useReportCategories();
+  const { data: states = [] } = useJurisdictions('STATE');
 
-  // Form State
-  const [formData, setFormData] = useState({
-    category: 'INFRASTRUCTURE_VANDALISM',
+  const [form, setForm] = useState({
     title: '',
-    state: 'Rivers',
-    lga: 'Port Harcourt',
-    landmark: '',
-    latitude: '4.8156',
-    longitude: '7.0498',
-    incidentDate: '2026-09-28',
-    incidentTime: '14:30',
-    evidenceFile: 'pipeline_valve_tampering_photo.jpg',
-    evidenceHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
     description: '',
-    involvedParties: '',
+    categoryId: '',
+    stateCode: '',
+    lgaCode: '',
+    addressText: '',
+    occurredAt: '',
     isAnonymous: true,
-    fullName: '',
-    phone: '',
+    contactEmail: '',
   });
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [receipt, setReceipt] = useState<SubmissionReceipt | null>(null);
 
-  const nextStep = () => {
-    if (currentStep === 7) {
-      // Simulate submission
-      setSubmittedRef('CAT-2026-00000001');
-      setCurrentStep(8);
-    } else {
-      setCurrentStep((prev) => Math.min(prev + 1, 8));
+  // LGAs depend on the chosen state, so they are fetched only once one is picked.
+  const { data: lgas = [] } = useJurisdictions('LGA', form.stateCode || undefined);
+
+  const draftKey = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return '';
     }
-  };
+    try {
+      const existing = window.localStorage.getItem(DRAFT_KEY_STORAGE);
+      if (existing) {
+        return existing;
+      }
+      const generated = crypto.randomUUID();
+      window.localStorage.setItem(DRAFT_KEY_STORAGE, generated);
+      return generated;
+    } catch {
+      return '';
+    }
+  }, []);
 
-  const prevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-  };
+  // A long description is easy to lose to a reload, so the form is saved
+  // server-side under an opaque key once there is something worth keeping.
+  useEffect(() => {
+    if (!draftKey || receipt || form.description.length < 40) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      void api
+        .public('/public/reports/drafts', {
+          method: 'POST',
+          body: { ownerKey: draftKey, payload: JSON.stringify(form) },
+        })
+        .catch(() => undefined);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [form, draftKey, receipt]);
+
+  useEffect(() => {
+    if (!draftKey) {
+      return;
+    }
+
+    void api
+      .public<{ payload: string }>(`/public/reports/drafts/${draftKey}`)
+      .then((draft) => {
+        const saved = JSON.parse(draft.payload) as typeof form;
+        setForm((current) => (current.description.length === 0 ? saved : current));
+      })
+      .catch(() => undefined);
+  }, [draftKey]);
+
+  function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
+    setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function useMyLocation() {
+    if (!('geolocation' in navigator)) {
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoords({
+          latitude: Number(position.coords.latitude.toFixed(5)),
+          longitude: Number(position.coords.longitude.toFixed(5)),
+        });
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { timeout: 10_000 },
+    );
+  }
+
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const result = await api.public<SubmissionReceipt>('/public/reports', {
+        method: 'POST',
+        body: {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          categoryId: form.categoryId,
+          isAnonymous: form.isAnonymous,
+          contactEmail: form.isAnonymous ? undefined : form.contactEmail.trim() || undefined,
+          stateCode: form.stateCode || undefined,
+          lgaCode: form.lgaCode || undefined,
+          addressText: form.addressText.trim() || undefined,
+          occurredAt: form.occurredAt ? new Date(form.occurredAt).toISOString() : undefined,
+          latitude: coords?.latitude,
+          longitude: coords?.longitude,
+        },
+      });
+
+      setReceipt(result);
+      if (draftKey) {
+        void api
+          .public(`/public/reports/drafts/${draftKey}`, { method: 'DELETE' })
+          .catch(() => undefined);
+      }
+    } catch (caught) {
+      setError(caught);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (receipt) {
+    return <Receipt receipt={receipt} />;
+  }
+
+  const descriptionShort = form.description.trim().length < 30;
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-10 px-4">
-      {/* Top Banner */}
-      <div className="max-w-2xl mx-auto mb-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-neutral-800">
-          <img
-            src="/logo.png"
-            alt="DICON Logo"
-            className="w-7 h-7 object-contain rounded-full bg-white p-0.5 border border-brand-100"
-          />
-          <span>CATCHAM NIGERIA</span>
-        </Link>
-        <span className="text-xs font-mono text-neutral-500">
-          Step {currentStep} of {STEPS.length}
-        </span>
-      </div>
-
-      {/* Main Form Container */}
-      <div className="max-w-2xl mx-auto">
-        {/* Step Progress Bar */}
-        <div className="w-full bg-neutral-200 h-1.5 rounded-full overflow-hidden mb-6">
-          <div
-            className="bg-brand-600 h-full transition-all duration-300"
-            style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
-          />
+    <div className="min-h-screen bg-neutral-50">
+      <header className="border-b border-neutral-200 bg-neutral-white">
+        <div className="max-w-2xl mx-auto px-5 sm:px-8 h-16 flex items-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm text-neutral-600 hover:text-neutral-950 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Link>
         </div>
+      </header>
 
-        <Card className="shadow-sm border-neutral-200">
-          <CardHeader>
-            <div className="flex items-center gap-2 text-brand-600 text-xs font-semibold uppercase tracking-wider">
-              <span>Guided Intake Protocol</span>
+      <main id="main-content" className="max-w-2xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+        <h1 className="text-xl sm:text-2xl font-bold text-neutral-950">Submit a report</h1>
+        <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
+          Describe what you saw as specifically as you can: what happened, where, when,
+          and who was involved. Specific reports can be acted on; vague ones usually
+          cannot.
+        </p>
+
+        <form onSubmit={onSubmit} className="mt-8 space-y-5" noValidate>
+          <Select
+            label="What kind of incident is this?"
+            required
+            value={form.categoryId}
+            onChange={(event) => set('categoryId', event.target.value)}
+            options={[
+              { value: '', label: 'Select a category' },
+              ...categories.map((category) => ({ value: category.id, label: category.name })),
+            ]}
+          />
+
+          <Input
+            label="Summary"
+            required
+            maxLength={200}
+            value={form.title}
+            onChange={(event) => set('title', event.target.value)}
+            placeholder="Suspected diversion of petroleum products"
+            helperText="One line. This is what the triage officer sees first."
+          />
+
+          <Textarea
+            label="What happened?"
+            required
+            rows={8}
+            maxLength={10_000}
+            value={form.description}
+            onChange={(event) => set('description', event.target.value)}
+            placeholder="Include dates and times, the location, vehicles or equipment involved, and anything that could be verified."
+            helperText={
+              descriptionShort
+                ? `At least 30 characters. ${form.description.trim().length} so far.`
+                : `${form.description.trim().length} characters.`
+            }
+          />
+
+          <fieldset className="rounded-xl border border-neutral-200 bg-neutral-white p-4 sm:p-5 space-y-4">
+            <legend className="px-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              Where did it happen?
+            </legend>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Select
+                label="State"
+                value={form.stateCode}
+                onChange={(event) => {
+                  set('stateCode', event.target.value);
+                  set('lgaCode', '');
+                }}
+                options={[
+                  { value: '', label: 'Select a state' },
+                  ...states.map((state) => ({ value: state.code, label: state.name })),
+                ]}
+              />
+              <Select
+                label="Local government area"
+                disabled={form.stateCode.length === 0 || lgas.length === 0}
+                value={form.lgaCode}
+                onChange={(event) => set('lgaCode', event.target.value)}
+                options={[
+                  {
+                    value: '',
+                    label:
+                      form.stateCode.length === 0
+                        ? 'Select a state first'
+                        : lgas.length === 0
+                          ? 'None listed for this state'
+                          : 'Select an LGA',
+                  },
+                  ...lgas.map((lga) => ({ value: lga.code, label: lga.name })),
+                ]}
+              />
             </div>
-            <CardTitle className="text-2xl mt-1">{STEPS[currentStep - 1]?.title}</CardTitle>
-            <CardDescription>
-              Provide accurate information to assist federal and state investigation teams.
-            </CardDescription>
-          </CardHeader>
 
-          <CardContent className="space-y-4">
-            {/* STEP 1: What Happened? */}
-            {currentStep === 1 && (
-              <div className="space-y-4">
-                <Select
-                  label="Incident Category"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  options={[
-                    { value: 'CORRUPTION', label: 'Public Sector Corruption & Bribery' },
-                    { value: 'FINANCIAL_FRAUD', label: 'Financial Crimes & Cyber Malpractice' },
-                    { value: 'DRUG_TRAFFICKING', label: 'Narcotics & Illicit Substance Trafficking' },
-                    { value: 'INFRASTRUCTURE_VANDALISM', label: 'Critical National Infrastructure Vandalism (Power/Oil)' },
-                    { value: 'ENVIRONMENTAL_HAZARD', label: 'Environmental Degradation & Toxic Spills' },
-                    { value: 'PUBLIC_SAFETY', label: 'Immediate Public Safety Threat' },
-                  ]}
-                  required
-                />
-                <Input
-                  label="Incident Title / Summary Headline"
-                  placeholder="e.g. Illegal oil pipeline valve tapping observed near riverbank"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  helperText="A short, clear headline describing the incident."
-                  required
-                />
-              </div>
-            )}
+            <Input
+              label="Address or landmark"
+              value={form.addressText}
+              onChange={(event) => set('addressText', event.target.value)}
+              placeholder="Near the Eleme junction flyover"
+            />
 
-            {/* STEP 2: Where Did It Happen? */}
-            {currentStep === 2 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Select
-                    label="State"
-                    value={formData.state}
-                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    options={[
-                      { value: 'Rivers', label: 'Rivers State' },
-                      { value: 'Lagos', label: 'Lagos State' },
-                      { value: 'FCT', label: 'Federal Capital Territory (Abuja)' },
-                      { value: 'Delta', label: 'Delta State' },
-                      { value: 'Bayelsa', label: 'Bayelsa State' },
-                      { value: 'Kano', label: 'Kano State' },
-                    ]}
-                    required
-                  />
-                  <Input
-                    label="Local Government Area (LGA)"
-                    value={formData.lga}
-                    onChange={(e) => setFormData({ ...formData, lga: e.target.value })}
-                    placeholder="e.g. Port Harcourt, Ikeja, Garki"
-                    required
-                  />
-                </div>
-
-                <Input
-                  label="Specific Location or Landmark"
-                  placeholder="e.g. Near Kilometer 14, East-West Road, opposite pipeline corridor"
-                  value={formData.landmark}
-                  onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
-                />
-
-                <div className="p-3 bg-brand-50 border border-brand-200 rounded-lg flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 text-brand-800">
-                    <MapPin className="w-4 h-4 text-brand-600" />
-                    <span>GPS Coordinates Detected: {formData.latitude}° N, {formData.longitude}° E</span>
-                  </div>
-                  <Badge status="success">Verified PostGIS Point</Badge>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: When Did It Happen? */}
-            {currentStep === 3 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    type="date"
-                    label="Date of Incident"
-                    value={formData.incidentDate}
-                    onChange={(e) => setFormData({ ...formData, incidentDate: e.target.value })}
-                    required
-                  />
-                  <Input
-                    type="time"
-                    label="Approximate Time"
-                    value={formData.incidentTime}
-                    onChange={(e) => setFormData({ ...formData, incidentTime: e.target.value })}
-                  />
-                </div>
-                <div className="p-3 bg-neutral-100 rounded-lg text-xs text-neutral-600 flex items-start gap-2">
-                  <Calendar className="w-4 h-4 text-neutral-500 shrink-0 mt-0.5" />
-                  <span>If the incident occurred over multiple days or is ongoing, indicate the most recent date observed.</span>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4: Add Evidence */}
-            {currentStep === 4 && (
-              <div className="space-y-4">
-                <div className="border-2 border-dashed border-neutral-300 rounded-xl p-8 text-center bg-neutral-50/50 hover:bg-neutral-100/50 transition-colors cursor-pointer">
-                  <Upload className="w-8 h-8 text-brand-600 mx-auto mb-2" />
-                  <p className="text-sm font-semibold text-neutral-800">Upload Photos, Videos, Documents, or Audio Statements</p>
-                  <p className="text-xs text-neutral-500 mt-1">Accepted: JPG, PNG, MP4, PDF, MP3 (Max 100MB)</p>
-                </div>
-
-                {/* Simulated Attached Evidence */}
-                <div className="p-3 bg-neutral-white border border-neutral-200 rounded-lg flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <FileCheck className="w-5 h-5 text-brand-600" />
-                    <div>
-                      <p className="text-xs font-semibold text-neutral-900">{formData.evidenceFile}</p>
-                      <p className="text-[10px] text-neutral-400 font-mono">SHA-256: {formData.evidenceHash.substring(0, 24)}...</p>
-                    </div>
-                  </div>
-                  <Badge status="success">Hash Verified</Badge>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 5: Narrative Details */}
-            {currentStep === 5 && (
-              <div className="space-y-4">
-                <Textarea
-                  label="Detailed Description"
-                  rows={4}
-                  placeholder="Provide detailed observations: What did you see? How was the action carried out? Vehicle numbers, names, or equipment used..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  required
-                />
-                <Input
-                  label="Involved Persons or Organizations (Optional)"
-                  placeholder="e.g. Contractors, security personnel, company name if visible"
-                  value={formData.involvedParties}
-                  onChange={(e) => setFormData({ ...formData, involvedParties: e.target.value })}
-                />
-              </div>
-            )}
-
-            {/* STEP 6: Anonymity Preference */}
-            {currentStep === 6 && (
-              <div className="space-y-4">
-                <div
-                  onClick={() => setFormData({ ...formData, isAnonymous: true })}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                    formData.isAnonymous ? 'border-brand-600 bg-brand-50/50' : 'border-neutral-200 bg-neutral-white'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Lock className="w-5 h-5 text-brand-600" />
-                      <h4 className="font-semibold text-sm text-neutral-900">100% Anonymous Submission</h4>
-                    </div>
-                    {formData.isAnonymous && <Check className="w-5 h-5 text-brand-600" />}
-                  </div>
-                  <p className="text-xs text-neutral-500 mt-1 pl-7">
-                    No name or contact information will be recorded. You will be provided a private tracking token to follow investigation progress.
-                  </p>
-                </div>
-
-                <div
-                  onClick={() => setFormData({ ...formData, isAnonymous: false })}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                    !formData.isAnonymous ? 'border-brand-600 bg-brand-50/50' : 'border-neutral-200 bg-neutral-white'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-5 h-5 text-neutral-700" />
-                      <h4 className="font-semibold text-sm text-neutral-900">Identified Submission</h4>
-                    </div>
-                    {!formData.isAnonymous && <Check className="w-5 h-5 text-brand-600" />}
-                  </div>
-                  <p className="text-xs text-neutral-500 mt-1 pl-7">
-                    Provide your contact details so federal investigators may follow up directly for clarification where needed.
-                  </p>
-                </div>
-
-                {!formData.isAnonymous && (
-                  <div className="space-y-3 pt-2">
-                    <Input
-                      label="Full Legal Name"
-                      value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      required
-                    />
-                    <Input
-                      label="Phone Number (Nigerian)"
-                      placeholder="+234 80X XXX XXXX"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      required
-                    />
-                  </div>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <Button type="button" variant="outline" size="sm" onClick={useMyLocation}>
+                {locating ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Crosshair className="w-3.5 h-3.5" />
                 )}
-              </div>
+                Use my current location
+              </Button>
+              {coords && (
+                <span className="text-xs text-brand-700 font-medium">
+                  Attached: {coords.latitude}, {coords.longitude}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-neutral-500">
+              Coordinates are optional. When present they take precedence over the state
+              and LGA you selected, because they are measured rather than chosen.
+            </p>
+          </fieldset>
+
+          <Input
+            label="When did it happen?"
+            type="datetime-local"
+            value={form.occurredAt}
+            onChange={(event) => set('occurredAt', event.target.value)}
+            helperText="Leave blank if you are not sure."
+          />
+
+          <fieldset className="rounded-xl border border-neutral-200 bg-neutral-white p-4 sm:p-5 space-y-3">
+            <legend className="px-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              Your identity
+            </legend>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="radio"
+                name="identity"
+                checked={form.isAnonymous}
+                onChange={() => set('isAnonymous', true)}
+                className="mt-1 accent-brand-600"
+              />
+              <span>
+                <span className="block text-sm font-medium text-neutral-900">
+                  Submit anonymously
+                </span>
+                <span className="block text-xs text-neutral-500 mt-0.5">
+                  No contact details are stored. You get a tracking code shown once.
+                </span>
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="radio"
+                name="identity"
+                checked={!form.isAnonymous}
+                onChange={() => set('isAnonymous', false)}
+                className="mt-1 accent-brand-600"
+              />
+              <span>
+                <span className="block text-sm font-medium text-neutral-900">
+                  Leave an email address
+                </span>
+                <span className="block text-xs text-neutral-500 mt-0.5">
+                  Investigators can contact you for clarification.
+                </span>
+              </span>
+            </label>
+
+            {!form.isAnonymous && (
+              <Input
+                label="Email address"
+                type="email"
+                required
+                value={form.contactEmail}
+                onChange={(event) => set('contactEmail', event.target.value)}
+              />
             )}
+          </fieldset>
 
-            {/* STEP 7: Review */}
-            {currentStep === 7 && (
-              <div className="space-y-4">
-                <div className="p-4 bg-neutral-100 rounded-lg space-y-3 text-xs">
-                  <div className="flex justify-between border-b border-neutral-200 pb-2">
-                    <span className="text-neutral-500">Category:</span>
-                    <strong className="text-neutral-900">{formData.category}</strong>
-                  </div>
-                  <div className="flex justify-between border-b border-neutral-200 pb-2">
-                    <span className="text-neutral-500">Location:</span>
-                    <strong className="text-neutral-900">{formData.state}, {formData.lga}</strong>
-                  </div>
-                  <div className="flex justify-between border-b border-neutral-200 pb-2">
-                    <span className="text-neutral-500">Mode:</span>
-                    <Badge status={formData.isAnonymous ? 'info' : 'success'}>
-                      {formData.isAnonymous ? 'Anonymous Whistleblower' : 'Identified Submitter'}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">Evidence Attached:</span>
-                    <strong className="text-neutral-900">{formData.evidenceFile}</strong>
-                  </div>
-                </div>
+          <InlineError error={error} />
 
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2 text-xs text-amber-900">
-                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  <span>By submitting, you certify that this report is submitted in good faith under Nigerian law.</span>
-                </div>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full"
+            isLoading={isSubmitting}
+            disabled={
+              form.title.trim().length < 8 || descriptionShort || form.categoryId.length === 0
+            }
+          >
+            Submit report
+          </Button>
+        </form>
+      </main>
+    </div>
+  );
+}
+
+function Receipt({ receipt }: { receipt: SubmissionReceipt }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copyBoth() {
+    const text = receipt.trackingCode
+      ? `Reference: ${receipt.referenceNumber}\nTracking code: ${receipt.trackingCode}`
+      : `Reference: ${receipt.referenceNumber}`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Clipboard access can be denied; the values are on screen regardless.
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-5 py-12">
+      <main id="main-content" className="w-full max-w-lg">
+        <Card>
+          <CardContent className="p-6 sm:p-8">
+            <div className="w-11 h-11 rounded-full bg-brand-50 border border-brand-200 flex items-center justify-center">
+              <Check className="w-5 h-5 text-brand-600" />
+            </div>
+
+            <h1 className="mt-5 text-lg font-bold text-neutral-950">Report received</h1>
+            <p className="mt-1.5 text-sm text-neutral-600">
+              {receipt.routedTo
+                ? `It has been routed to ${receipt.routedTo}.`
+                : 'It is queued for manual assignment to an agency.'}
+            </p>
+
+            <dl className="mt-6 space-y-3">
+              <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3.5">
+                <dt className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+                  Reference number
+                </dt>
+                <dd className="mt-1 font-mono text-base font-bold text-neutral-950 break-all">
+                  {receipt.referenceNumber}
+                </dd>
               </div>
-            )}
 
-            {/* STEP 8: Submission Complete */}
-            {currentStep === 8 && (
-              <div className="text-center py-6 space-y-4">
-                <div className="w-12 h-12 bg-brand-50 border border-brand-200 rounded-full flex items-center justify-center mx-auto text-brand-600">
-                  <Check className="w-6 h-6 stroke-[3]" />
+              {receipt.trackingCode && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 p-3.5">
+                  <dt className="text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+                    Tracking code
+                  </dt>
+                  <dd className="mt-1 font-mono text-base font-bold text-neutral-950 break-all">
+                    {receipt.trackingCode}
+                  </dd>
                 </div>
-                <h3 className="text-xl font-bold text-neutral-950">Report Successfully Submitted</h3>
-                <p className="text-xs text-neutral-500 max-w-md mx-auto">
-                  Your report has been cryptographically registered and forwarded for multi-agency triage.
-                </p>
+              )}
+            </dl>
 
-                <div className="p-4 bg-neutral-100 border border-neutral-200 rounded-xl max-w-sm mx-auto text-left space-y-2">
-                  <div className="text-[11px] text-neutral-500 font-semibold uppercase">Tracking Reference</div>
-                  <div className="text-lg font-mono font-bold text-brand-700">{submittedRef}</div>
-                  <div className="text-[11px] text-neutral-400">Save this reference code to track investigation updates.</div>
-                </div>
-
-                <div className="pt-4 flex justify-center gap-3">
-                  <Link href="/track">
-                    <Button variant="primary">Track Report Now</Button>
-                  </Link>
-                  <Link href="/">
-                    <Button variant="outline">Return Home</Button>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </CardContent>
-
-          {currentStep < 8 && (
-            <CardFooter className="flex justify-between border-t border-neutral-100 pt-4">
-              <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
+            {receipt.trackingCode && (
+              <div
+                role="alert"
+                className="mt-4 flex gap-2.5 rounded-lg border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900"
               >
-                <ArrowLeft className="w-4 h-4 mr-1.5" />
-                Previous
-              </Button>
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
+                <p>
+                  Save both values now. Only a hash of the tracking code is stored, so it
+                  cannot be shown again or recovered — without it you will not be able to
+                  track this report.
+                </p>
+              </div>
+            )}
 
-              <Button variant="primary" onClick={nextStep}>
-                <span>{currentStep === 7 ? 'Submit Report' : 'Continue'}</span>
-                <ArrowRight className="w-4 h-4 ml-1.5" />
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => void copyBoth()}>
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? 'Copied' : 'Copy details'}
               </Button>
-            </CardFooter>
-          )}
+              <Link href="/track" className="flex-1">
+                <Button variant="primary" className="w-full">
+                  Track this report
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
         </Card>
-      </div>
+      </main>
     </div>
   );
 }

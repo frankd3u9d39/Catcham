@@ -1,24 +1,27 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { Observable, map } from 'rxjs';
 
-export interface Response<T> {
+export interface ApiEnvelope<T> {
+  success: true;
   data: T;
-  meta: {
-    timestamp: string;
-  };
 }
 
+export const RAW_RESPONSE = Symbol('catcham:raw-response');
+
+/**
+ * Wraps successful payloads in { success, data } to match the error shape from
+ * AllExceptionsFilter. Handlers that stream a file set RAW_RESPONSE to opt out.
+ */
 @Injectable()
-export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
+export class TransformInterceptor<T> implements NestInterceptor<T, ApiEnvelope<T> | T> {
+  intercept(_context: ExecutionContext, next: CallHandler): Observable<ApiEnvelope<T> | T> {
     return next.handle().pipe(
-      map((data) => ({
-        data,
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      })),
+      map((data) => {
+        if (data !== null && typeof data === 'object' && RAW_RESPONSE in data) {
+          return data as T;
+        }
+        return { success: true as const, data };
+      }),
     );
   }
 }

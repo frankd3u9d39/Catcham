@@ -1,70 +1,20 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
+    "lib": ["ES2022"],
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "baseUrl": ".",
-    "paths": {
-      "@catcham/core": [
-        "packages/core/src/index.ts"
-      ],
-      "@catcham/identity": [
-        "packages/identity/src/index.ts"
-      ],
-      "@catcham/organization": [
-        "packages/organization/src/index.ts"
-      ],
-      "@catcham/reporting": [
-        "packages/reporting/src/index.ts"
-      ],
-      "@catcham/investigation": [
-        "packages/investigation/src/index.ts"
-      ],
-      "@catcham/evidence": [
-        "packages/evidence/src/index.ts"
-      ],
-      "@catcham/notification": [
-        "packages/notification/src/index.ts"
-      ],
-      "@catcham/audit": [
-        "packages/audit/src/index.ts"
-      ],
-      "@catcham/analytics": [
-        "packages/analytics/src/index.ts"
-      ],
-      "@catcham/search": [
-        "packages/search/src/index.ts"
-      ],
-      "@catcham/gis": [
-        "packages/gis/src/index.ts"
-      ]
-    }
+    "resolveJsonModule": true,
+    "sourceMap": true
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    ".next",
-    ".expo"
-  ]
+  "include": ["prisma/**/*.ts"],
+  "exclude": ["node_modules", "dist", ".next", ".expo"]
 }

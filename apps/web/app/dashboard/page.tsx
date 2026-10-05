@@ -1,187 +1,358 @@
 'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import {
+  ArrowRight,
+  Briefcase,
+  CheckSquare,
+  Clock,
+  Inbox,
+  ShieldCheck,
+} from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { RequireAuth } from '@/components/layout/require-auth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Briefcase, AlertTriangle, Clock, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadingState } from '@/components/ui/loading-state';
+import { ErrorState } from '@/components/ui/error-state';
+import { useAuth } from '@/providers/auth-provider';
+import { useInvestigations, useWorkload } from '@/hooks/use-investigations';
+import { useReports } from '@/hooks/use-reports';
+import { useOverdueCases } from '@/hooks/use-platform';
+import {
+  formatRelative,
+  humanise,
+  isOverdue,
+  priorityBadge,
+  statusBadge,
+} from '@/lib/format';
 
-export default function InvestigatorDashboard() {
-  const activeCases = [
-    {
-      id: 'CAS-2026-0042',
-      title: 'Crude Oil Bunkering & Pipeline Diversion',
-      agency: 'EFCC / NPF Joint Taskforce',
-      priority: 'CRITICAL',
-      status: 'UNDER_INVESTIGATION',
-      dueDate: 'Today, 18:00',
-    },
-    {
-      id: 'CAS-2026-0038',
-      title: 'Procurement Fraud at Regional River Basin Authority',
-      agency: 'EFCC Financial Crimes',
-      priority: 'HIGH',
-      status: 'EVIDENCE_REVIEW',
-      dueDate: 'Tomorrow',
-    },
-    {
-      id: 'CAS-2026-0031',
-      title: 'Distribution of Substandard Electrical Transformers',
-      agency: 'NERC Regulatory Oversight',
-      priority: 'MEDIUM',
-      status: 'SUPERVISOR_REVIEW',
-      dueDate: '04 Oct 2026',
-    },
-  ];
+export default function DashboardPage() {
+  return (
+    <RequireAuth>
+      <AppShell breadcrumbs={[{ label: 'Dashboard' }]}>
+        <Dashboard />
+      </AppShell>
+    </RequireAuth>
+  );
+}
+
+function Dashboard() {
+  const { user, can } = useAuth();
+
+  // Only fetch what the caller is allowed to read. Without these gates an
+  // intake officer, who has no case access, would see permission errors on a
+  // screen that is supposed to be their starting point.
+  const canReadCases = can('investigation:read');
+  const canReadReports = can('report:read');
+  const canReadAnalytics = can('analytics:read');
+
+  const workload = useWorkload(canReadCases);
+  const overdue = useOverdueCases(canReadAnalytics);
+  const myCases = useInvestigations({ assignedToMe: true, pageSize: 5 }, canReadCases);
+  const supervising = useInvestigations({ pageSize: 5 }, canReadCases);
+  const queue = useReports({ status: 'SUBMITTED', pageSize: 5 }, canReadReports);
+
+  const cases = myCases.data?.total ? myCases : supervising;
+
+  if (canReadCases && workload.isLoading) {
+    return <LoadingState message="Loading your workload" />;
+  }
 
   return (
-    <AppShell breadcrumbs={[{ label: 'Dashboard' }]}>
-      {/* Top Welcome Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-950">Good morning, Investigator Adeleke</h1>
+    <>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-7">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-950 truncate">
+            {greeting()}, {user?.fullName.split(' ')[0] ?? 'there'}
+          </h1>
           <p className="text-xs text-neutral-500 mt-1">
-            Zonal Command: South-South Operations (Rivers & Bayelsa) • 4 cases require urgent action
+            {user?.roleCodes.map(humanise).join(', ') || 'No role assigned'}
+            {user && user.agencyIds.length > 0
+              ? ` · ${user.agencyIds.length} agency membership${user.agencyIds.length === 1 ? '' : 's'}`
+              : ''}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/reports">
-            <Button variant="outline" size="sm">Triage Ledger</Button>
-          </Link>
-          <Link href="/investigations">
-            <Button variant="primary" size="sm">All Cases</Button>
-          </Link>
+        <div className="flex items-center gap-2.5 shrink-0">
+          {canReadReports && (
+            <Link href="/reports">
+              <Button variant="outline" size="sm">
+                Report queue
+              </Button>
+            </Link>
+          )}
+          {canReadCases && (
+            <Link href="/investigations">
+              <Button variant="primary" size="sm">
+                All cases
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase text-neutral-400">Assigned Cases</p>
-              <h3 className="text-2xl font-bold text-neutral-950 mt-1">14</h3>
-              <span className="text-[11px] text-brand-600 font-medium">3 Lead Investigator roles</span>
-            </div>
-            <div className="p-3 bg-brand-50 rounded-lg text-brand-600">
-              <Briefcase className="w-5 h-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase text-neutral-400">Due Today</p>
-              <h3 className="text-2xl font-bold text-neutral-950 mt-1">2</h3>
-              <span className="text-[11px] text-amber-700 font-medium">Court filings pending</span>
-            </div>
-            <div className="p-3 bg-amber-50 rounded-lg text-amber-600">
-              <Clock className="w-5 h-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase text-neutral-400">High Priority</p>
-              <h3 className="text-2xl font-bold text-neutral-950 mt-1">4</h3>
-              <span className="text-[11px] text-red-700 font-medium">Critical infrastructure</span>
-            </div>
-            <div className="p-3 bg-red-50 rounded-lg text-red-600">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase text-neutral-400">Evidence Vaulted</p>
-              <h3 className="text-2xl font-bold text-neutral-950 mt-1">48</h3>
-              <span className="text-[11px] text-brand-600 font-medium">100% SHA-256 verified</span>
-            </div>
-            <div className="p-3 bg-brand-50 rounded-lg text-brand-600">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Workload counts are all case-derived, so they are meaningless without
+          case access and the tiles are omitted rather than shown as zeroes. */}
+      {canReadCases && (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-7">
+        <StatTile
+          label="Assigned to me"
+          value={workload.data?.assigned ?? 0}
+          hint="Open cases"
+          icon={<Briefcase className="w-5 h-5" />}
+          tone="brand"
+        />
+        <StatTile
+          label="Supervising"
+          value={workload.data?.supervising ?? 0}
+          hint="Cases you own"
+          icon={<ShieldCheck className="w-5 h-5" />}
+          tone="brand"
+        />
+        <StatTile
+          label="Due within 24h"
+          value={workload.data?.dueWithin24h ?? 0}
+          hint="On your cases"
+          icon={<Clock className="w-5 h-5" />}
+          tone={workload.data?.dueWithin24h ? 'amber' : 'neutral'}
+        />
+        <StatTile
+          label="Open tasks"
+          value={workload.data?.openTasks ?? 0}
+          hint="Assigned to you"
+          icon={<CheckSquare className="w-5 h-5" />}
+          tone={workload.data?.openTasks ? 'amber' : 'neutral'}
+        />
       </div>
+      )}
 
-      {/* Main Workspace Layout (2 Columns: Active Cases + Task Checklist) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Active Cases Ledger */}
-        <div className="lg:col-span-2 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
+        <div className="lg:col-span-2 space-y-5">
+          {canReadCases && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-base font-semibold">Priority Cases Assigned to You</CardTitle>
-              <Link href="/investigations" className="text-xs text-brand-600 font-medium hover:underline flex items-center gap-1">
-                <span>View all</span>
+              <CardTitle className="text-base font-semibold">
+                {myCases.data?.total ? 'Your cases' : 'Cases in your agencies'}
+              </CardTitle>
+              <Link
+                href="/investigations"
+                className="text-xs text-brand-600 font-medium hover:underline flex items-center gap-1 shrink-0"
+              >
+                View all
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </CardHeader>
-            <CardContent className="divide-y divide-neutral-100 p-0">
-              {activeCases.map((c) => (
-                <div key={c.id} className="p-4 hover:bg-neutral-50/80 transition-colors flex items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-neutral-900">{c.id}</span>
-                      <Badge status={c.priority === 'CRITICAL' ? 'error' : c.priority === 'HIGH' ? 'warning' : 'info'}>
-                        {c.priority}
-                      </Badge>
-                      <Badge status="success">{c.status}</Badge>
-                    </div>
-                    <h4 className="text-sm font-semibold text-neutral-900">{c.title}</h4>
-                    <p className="text-xs text-neutral-400">{c.agency} • Due: {c.dueDate}</p>
-                  </div>
-
-                  <Link href={`/investigations/${c.id}`}>
-                    <Button variant="outline" size="sm">
-                      Inspect
-                    </Button>
-                  </Link>
-                </div>
-              ))}
+            <CardContent className="p-0">
+              {cases.isLoading ? (
+                <LoadingState message="Loading cases" />
+              ) : cases.error ? (
+                <ErrorState error={cases.error} onRetry={() => void cases.refetch()} className="m-4" />
+              ) : cases.data?.items.length === 0 ? (
+                <EmptyState
+                  className="border-0 bg-transparent"
+                  icon={<Briefcase className="w-7 h-7 text-neutral-400" />}
+                  title="No open cases"
+                  description="Cases appear here once a supervisor opens one from a report in your agency."
+                />
+              ) : (
+                <ul className="divide-y divide-neutral-100">
+                  {cases.data?.items.map((item) => (
+                    <li key={item.id}>
+                      <Link
+                        href={`/investigations/${item.id}`}
+                        className="flex items-center justify-between gap-4 p-4 hover:bg-neutral-50/80 transition-colors"
+                      >
+                        <div className="min-w-0 space-y-1.5">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-neutral-900">
+                              {item.caseNumber}
+                            </span>
+                            <Badge status={priorityBadge(item.priority)}>{item.priority}</Badge>
+                            <Badge status={statusBadge(item.status)} showIcon={false}>
+                              {humanise(item.status)}
+                            </Badge>
+                          </div>
+                          <p className="text-sm font-semibold text-neutral-900 truncate">
+                            {item.title}
+                          </p>
+                          <p className="text-xs text-neutral-400">
+                            {item.agencyName}
+                            {item.openTasks > 0 && ` · ${item.openTasks} open task${item.openTasks === 1 ? '' : 's'}`}
+                            {item.dueAt && (
+                              <span className={isOverdue(item.dueAt) ? 'text-red-600 font-medium' : ''}>
+                                {' '}· due {formatRelative(item.dueAt)}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-neutral-300 shrink-0" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
+          )}
+
+          {canReadReports && (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-3">
+                <CardTitle className="text-base font-semibold">Awaiting triage</CardTitle>
+                <Link
+                  href="/reports?status=SUBMITTED"
+                  className="text-xs text-brand-600 font-medium hover:underline flex items-center gap-1 shrink-0"
+                >
+                  Open queue
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </CardHeader>
+              <CardContent className="p-0">
+                {queue.isLoading ? (
+                  <LoadingState message="Loading the queue" />
+                ) : queue.data?.items.length === 0 ? (
+                  <EmptyState
+                    className="border-0 bg-transparent"
+                    icon={<Inbox className="w-7 h-7 text-neutral-400" />}
+                    title="The queue is clear"
+                    description="Every submitted report has been triaged."
+                  />
+                ) : (
+                  <ul className="divide-y divide-neutral-100">
+                    {queue.data?.items.map((report) => (
+                      <li key={report.id}>
+                        <Link
+                          href={`/reports/${report.id}`}
+                          className="flex items-center justify-between gap-4 p-4 hover:bg-neutral-50/80 transition-colors"
+                        >
+                          <div className="min-w-0 space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono text-[11px] font-bold text-neutral-500">
+                                {report.referenceNumber}
+                              </span>
+                              <Badge status={priorityBadge(report.priority)}>
+                                {report.priority}
+                              </Badge>
+                              {report.isAnonymous && (
+                                <Badge status="confidential" showIcon={false}>
+                                  Anonymous
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm font-medium text-neutral-900 truncate">
+                              {report.title}
+                            </p>
+                            <p className="text-xs text-neutral-400">
+                              {report.categoryName} · {formatRelative(report.createdAt)}
+                            </p>
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-neutral-300 shrink-0" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        {/* Right: Operational Tasks Checklist */}
-        <div className="space-y-4">
+        <div>
+          {canReadAnalytics && (
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">Immediate Tasks Checklist</CardTitle>
+              <CardTitle className="text-base font-semibold">Past due</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 p-4">
-              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] font-bold text-neutral-500">CAS-2026-0042</span>
-                  <span className="text-[10px] text-red-600 font-semibold">Today</span>
+            <CardContent className="p-4">
+              {overdue.isLoading ? (
+                <LoadingState message="Checking due dates" />
+              ) : overdue.data?.length === 0 ? (
+                <div className="flex flex-col items-center text-center py-7">
+                  <ShieldCheck className="w-7 h-7 text-brand-500 mb-3" />
+                  <p className="text-sm font-medium text-neutral-900">Nothing overdue</p>
+                  <p className="mt-1 text-xs text-neutral-500">
+                    Every open case in your agencies is within its due date.
+                  </p>
                 </div>
-                <p className="text-xs font-semibold text-neutral-900">Sign off on AI transcription transcript of witness audio.</p>
-              </div>
-
-              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] font-bold text-neutral-500">CAS-2026-0038</span>
-                  <span className="text-[10px] text-amber-600 font-semibold">Tomorrow</span>
-                </div>
-                <p className="text-xs font-semibold text-neutral-900">Transfer physical valve sample to Port Harcourt Forensic Lab.</p>
-              </div>
-
-              <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] font-bold text-neutral-500">CAS-2026-0031</span>
-                  <span className="text-[10px] text-neutral-500">03 Oct</span>
-                </div>
-                <p className="text-xs font-semibold text-neutral-900">Prepare briefing notes for Supervisor review meeting.</p>
-              </div>
+              ) : (
+                <ul className="space-y-2.5">
+                  {overdue.data?.slice(0, 6).map((item) => (
+                    <li key={item.id}>
+                      <Link
+                        href={`/investigations/${item.id}`}
+                        className="block p-3 rounded-lg border border-red-200 bg-red-50/60 hover:bg-red-50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-mono text-[11px] font-bold text-neutral-600 truncate">
+                            {item.caseNumber}
+                          </span>
+                          <span className="text-[10px] font-semibold text-red-700 shrink-0">
+                            {item.daysOverdue}d late
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs font-medium text-neutral-900 line-clamp-2">
+                          {item.title}
+                        </p>
+                        <p className="mt-1 text-[11px] text-neutral-500">
+                          {item.agency} · {humanise(item.status)}
+                        </p>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
+          )}
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }
+
+function StatTile({
+  label,
+  value,
+  hint,
+  icon,
+  tone,
+}: {
+  label: string;
+  value: number;
+  hint: string;
+  icon: React.ReactNode;
+  tone: 'brand' | 'amber' | 'neutral';
+}) {
+  const tones = {
+    brand: 'bg-brand-50 text-brand-600',
+    amber: 'bg-amber-50 text-amber-600',
+    neutral: 'bg-neutral-100 text-neutral-400',
+  } as const;
+
+  return (
+    <Card>
+      <CardContent className="p-4 sm:p-5 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
+            {label}
+          </p>
+          <p className="text-xl sm:text-2xl font-bold text-neutral-950 mt-1">{value}</p>
+          <p className="text-[11px] text-neutral-500 mt-0.5 truncate">{hint}</p>
+        </div>
+        <div className={`p-2.5 rounded-lg shrink-0 ${tones[tone]}`}>{icon}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function greeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) {
+    return 'Good morning';
+  }
+  return hour < 17 ? 'Good afternoon' : 'Good evening';
+}
+

@@ -1,84 +1,79 @@
 import React from 'react';
-import { Check, Circle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-export interface StepItem {
-  id: string;
-  label: string;
-  timestamp?: string;
-  actor?: string;
-}
+import { Check } from 'lucide-react';
+import { humanise } from '@/lib/format';
+import { INVESTIGATION_STATUSES } from '@/lib/options';
 
 interface WorkflowStepperProps {
-  steps: StepItem[];
-  currentStepIndex: number;
-  className?: string;
+  currentState: string;
+  /** States the case has already passed through, from the workflow history. */
+  history: string[];
 }
 
-export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({
-  steps,
-  currentStepIndex,
-  className,
-}) => {
+/**
+ * Progress along the seeded case workflow.
+ *
+ * The workflow is data, not code, so a published definition can contain states
+ * this list does not know about. Those are appended rather than dropped, which
+ * keeps the stepper honest about where the case actually is.
+ */
+export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({ currentState, history }) => {
+  const known = INVESTIGATION_STATUSES.filter((state) => state !== 'REFERRED');
+  const extra = [...new Set([...history, currentState])].filter(
+    (state) => !known.includes(state as never),
+  );
+  const states = [...known, ...extra];
+
+  const currentIndex = states.indexOf(currentState);
+  const visited = new Set(history);
+
   return (
-    <div className={cn('w-full py-4', className)}>
-      <nav aria-label="Workflow progress">
-        <ol className="flex items-center justify-between w-full">
-          {steps.map((step, index) => {
-            const isCompleted = index < currentStepIndex;
-            const isCurrent = index === currentStepIndex;
-            const isUpcoming = index > currentStepIndex;
+    <ol className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+      {states.map((state, index) => {
+        const isCurrent = state === currentState;
+        // A state counts as complete if it is behind the current one in the
+        // sequence, or the case has demonstrably been through it.
+        const isComplete = !isCurrent && (visited.has(state) || (currentIndex > -1 && index < currentIndex));
 
-            return (
-              <li key={step.id} className="relative flex-1 flex flex-col items-center text-center">
-                {/* Connector line between steps */}
-                {index !== 0 && (
-                  <div
-                    className={cn(
-                      'absolute top-4 -left-1/2 w-full h-0.5 -translate-y-1/2',
-                      isCompleted ? 'bg-brand-600' : 'bg-neutral-200'
-                    )}
-                    aria-hidden="true"
-                  />
-                )}
+        return (
+          <li key={state} className="flex items-center gap-3 sm:flex-1 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                  isCurrent
+                    ? 'bg-brand-600 text-neutral-white ring-4 ring-brand-100'
+                    : isComplete
+                      ? 'bg-brand-100 text-brand-700'
+                      : 'bg-neutral-100 text-neutral-400'
+                }`}
+                aria-hidden="true"
+              >
+                {isComplete ? <Check className="w-3 h-3" /> : index + 1}
+              </span>
+              <span
+                className={`text-xs truncate ${
+                  isCurrent
+                    ? 'font-semibold text-neutral-950'
+                    : isComplete
+                      ? 'text-neutral-600'
+                      : 'text-neutral-400'
+                }`}
+              >
+                {humanise(state)}
+                {isCurrent && <span className="sr-only"> (current state)</span>}
+              </span>
+            </div>
 
-                {/* Step Marker */}
-                <div
-                  className={cn(
-                    'relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all',
-                    isCompleted && 'bg-brand-600 border-brand-600 text-neutral-white',
-                    isCurrent && 'bg-neutral-white border-brand-600 text-brand-600 ring-4 ring-brand-100',
-                    isUpcoming && 'bg-neutral-100 border-neutral-300 text-neutral-400'
-                  )}
-                >
-                  {isCompleted ? (
-                    <Check className="w-4 h-4 stroke-[2.5]" />
-                  ) : (
-                    <span className="text-xs font-semibold">{index + 1}</span>
-                  )}
-                </div>
-
-                {/* Labels */}
-                <div className="mt-2 space-y-0.5">
-                  <p
-                    className={cn(
-                      'text-xs font-semibold',
-                      isCurrent && 'text-brand-600',
-                      isCompleted && 'text-neutral-900',
-                      isUpcoming && 'text-neutral-400'
-                    )}
-                  >
-                    {step.label}
-                  </p>
-                  {step.timestamp && (
-                    <p className="text-[11px] text-neutral-400 font-mono">{step.timestamp}</p>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
-    </div>
+            {index < states.length - 1 && (
+              <span
+                className={`hidden sm:block flex-1 h-px mx-2 ${
+                  isComplete ? 'bg-brand-200' : 'bg-neutral-200'
+                }`}
+                aria-hidden="true"
+              />
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 };

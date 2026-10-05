@@ -1,34 +1,85 @@
-name: CATCHAM CI
+name: CI
 
 on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The build and typecheck need a valid environment because configuration is
+  # validated at boot. These are throwaway values for CI only.
+  DATABASE_URL: file:./data/ci.db
+  JWT_ACCESS_SECRET: ci_access_secret_padded_to_thirty_two_chars
+  JWT_REFRESH_SECRET: ci_refresh_secret_padded_to_thirty_two_chars
 
 jobs:
-  validate:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 10.23.0
+      - run: pnpm install --frozen-lockfile
 
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Lint & Typecheck
+      - name: Prepare the database
+        # The API suite boots the real application against a real database, so
+        # it needs the schema applied and the reference data seeded.
         run: |
-          pnpm turbo run lint
-          pnpm turbo run build
+          pnpm db:generate
+          pnpm db:deploy
+          pnpm db:seed
+        env:
+          SEED_DEMO: 'false'
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
 
       - name: Test
-        run: pnpm turbo run test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Catches a schema change committed without its migration, which would
+      # otherwise only surface on deploy.
+      - name: Apply migrations to a fresh database
+        run: pnpm db:deploy
+
+      - name: Check the schema matches the migrations
+        run: pnpm exec prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url file:./data/shadow.db --exit-code
+
+      - name: Seed
+        run: pnpm db:seed
+        env:
+          SEED_DEMO: 'false'

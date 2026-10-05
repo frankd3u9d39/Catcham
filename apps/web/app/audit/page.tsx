@@ -1,87 +1,179 @@
 'use client';
-import React from 'react';
-import { AppShell } from '@/components/layout/app-shell';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ShieldCheck, FileStack, Lock } from 'lucide-react';
 
-export default function AuditLedgerPage() {
-  const auditLogs = [
-    {
-      id: 'aud-98214',
-      action: 'EVIDENCE_INSPECTED',
-      resource: 'Evidence/evi-101',
-      actor: 'oladipo.adeleke@efcc.gov.ng',
-      ip: '105.112.45.12',
-      timestamp: '29 Sep 2026, 11:15:20',
-      reason: 'Forensic inspection of photo metadata for CAS-2026-0042',
-    },
-    {
-      id: 'aud-98213',
-      action: 'CASE_ASSIGNED',
-      resource: 'Investigation/CAS-2026-0042',
-      actor: 'supervisor.sanusi@efcc.gov.ng',
-      ip: '105.112.12.80',
-      timestamp: '29 Sep 2026, 09:30:05',
-      reason: 'Assigned Lead Investigator Oladipo Adeleke',
-    },
-    {
-      id: 'aud-98212',
-      action: 'EVIDENCE_HASH_VERIFIED',
-      resource: 'Evidence/evi-101',
-      actor: 'SYSTEM_DAEMON',
-      ip: '127.0.0.1',
-      timestamp: '28 Sep 2026, 14:35:48',
-      reason: 'Intake SHA-256 match confirmation',
-    },
-  ];
+import React, { useState } from 'react';
+import { FileStack } from 'lucide-react';
+import { AppShell } from '@/components/layout/app-shell';
+import { RequireAuth } from '@/components/layout/require-auth';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadingState } from '@/components/ui/loading-state';
+import { ErrorState } from '@/components/ui/error-state';
+import { Pagination } from '@/components/ui/pagination';
+import { useAuditLog } from '@/hooks/use-platform';
+import { formatDateTime, humanise } from '@/lib/format';
+
+const RESOURCES = [
+  { value: '', label: 'All resources' },
+  { value: 'report', label: 'Reports' },
+  { value: 'investigation', label: 'Investigations' },
+  { value: 'evidence', label: 'Evidence' },
+  { value: 'user', label: 'Users' },
+  { value: 'agency', label: 'Agencies' },
+  { value: 'business_rule', label: 'Business rules' },
+];
+
+/** Actions that change who can see or hold something, highlighted in the list. */
+const SENSITIVE_ACTIONS = new Set([
+  'EVIDENCE_DOWNLOADED',
+  'EVIDENCE_CUSTODY_TRANSFERRED',
+  'EVIDENCE_ARCHIVED',
+  'MEMBERSHIP_GRANTED',
+  'MEMBERSHIP_REVOKED',
+  'PASSWORD_CHANGED',
+  'REPORT_REJECTED',
+]);
+
+export default function AuditPage() {
+  return (
+    <RequireAuth permissions={['audit:read']}>
+      <AppShell breadcrumbs={[{ label: 'Activity log' }]}>
+        <AuditLog />
+      </AppShell>
+    </RequireAuth>
+  );
+}
+
+function AuditLog() {
+  const [filters, setFilters] = useState({
+    page: 1,
+    pageSize: 25,
+    resource: '',
+    action: '',
+    from: '',
+    to: '',
+  });
+
+  const query = useAuditLog({
+    page: filters.page,
+    pageSize: filters.pageSize,
+    resource: filters.resource || undefined,
+    action: filters.action || undefined,
+  });
+
+  function update(patch: Partial<typeof filters>) {
+    setFilters((current) => ({ ...current, ...patch, page: patch.page ?? 1 }));
+  }
 
   return (
-    <AppShell breadcrumbs={[{ label: 'Audit Trail' }]}>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-950">Append-Only Judicial Compliance Audit Trail</h1>
-          <p className="text-xs text-neutral-500 mt-1">
-            Guaranteed tamper-evident write-only security log for court review and oversight.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge status="success">Cryptographic Lock Active</Badge>
-        </div>
+    <>
+      <div className="mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-neutral-950">Activity log</h1>
+        <p className="text-xs text-neutral-500 mt-1">
+          Append-only record of who did what. Entries are written alongside the action they
+          describe and are never edited or removed.
+        </p>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-neutral-700">
-              <thead className="bg-neutral-100 text-neutral-900 uppercase font-semibold text-[11px] border-b border-neutral-200">
-                <tr>
-                  <th className="py-3 px-4">Log ID</th>
-                  <th className="py-3 px-4">Action</th>
-                  <th className="py-3 px-4">Target Resource</th>
-                  <th className="py-3 px-4">Actor</th>
-                  <th className="py-3 px-4">Reason / Context</th>
-                  <th className="py-3 px-4 font-mono">Timestamp</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100">
-                {auditLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-neutral-50/80 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-bold text-neutral-900">{log.id}</td>
-                    <td className="py-3.5 px-4">
-                      <Badge status="info">{log.action}</Badge>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-neutral-600">{log.resource}</td>
-                    <td className="py-3.5 px-4 font-medium text-neutral-900">{log.actor}</td>
-                    <td className="py-3.5 px-4 text-neutral-600 max-w-sm truncate">{log.reason}</td>
-                    <td className="py-3.5 px-4 text-neutral-400 font-mono text-[11px]">{log.timestamp}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <Card className="mb-5">
+        <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Select
+            label="Resource"
+            value={filters.resource}
+            onChange={(event) => update({ resource: event.target.value })}
+            options={RESOURCES}
+          />
+          <Input
+            label="Action"
+            value={filters.action}
+            onChange={(event) => update({ action: event.target.value })}
+            placeholder="EVIDENCE_DOWNLOADED"
+            helperText="Exact match on the action name."
+          />
         </CardContent>
       </Card>
-    </AppShell>
+
+      {query.isLoading ? (
+        <LoadingState message="Loading the activity log" />
+      ) : query.error ? (
+        <ErrorState error={query.error} onRetry={() => void query.refetch()} />
+      ) : query.data?.items.length === 0 ? (
+        <EmptyState
+          icon={<FileStack className="w-8 h-8 text-neutral-400" />}
+          title="No entries match these filters"
+          description="Clear the action filter, or pick a different resource, to see more."
+        />
+      ) : (
+        <>
+          <ul className="space-y-2.5">
+            {query.data?.items.map((entry) => {
+              const sensitive = SENSITIVE_ACTIONS.has(entry.action);
+
+              return (
+                <li key={entry.id}>
+                  <Card className={sensitive ? 'border-amber-200' : undefined}>
+                    <CardContent className="p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2 min-w-0">
+                          <Badge status={sensitive ? 'warning' : 'info'} showIcon={false}>
+                            {humanise(entry.action)}
+                          </Badge>
+                          <span className="text-xs text-neutral-500">
+                            {entry.resource}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-neutral-500 shrink-0">
+                          {formatDateTime(entry.createdAt)}
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm text-neutral-800">
+                        <span className="font-medium">{entry.actorLabel}</span>
+                        {entry.ipAddress && (
+                          <span className="text-xs text-neutral-500 font-mono">
+                            {' '}
+                            from {entry.ipAddress}
+                          </span>
+                        )}
+                      </p>
+
+                      <p className="mt-1 font-mono text-[10px] text-neutral-400 break-all">
+                        {entry.resource}/{entry.resourceId}
+                      </p>
+
+                      {entry.metadata && Object.keys(entry.metadata).length > 0 && (
+                        <dl className="mt-2.5 pt-2.5 border-t border-neutral-100 grid gap-1 text-[11px]">
+                          {Object.entries(entry.metadata).map(([key, value]) => (
+                            <div key={key} className="flex gap-2">
+                              <dt className="text-neutral-400 shrink-0">{key}</dt>
+                              <dd className="text-neutral-700 break-all">
+                                {typeof value === 'object'
+                                  ? JSON.stringify(value)
+                                  : String(value)}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      )}
+                    </CardContent>
+                  </Card>
+                </li>
+              );
+            })}
+          </ul>
+
+          {query.data && (
+            <Pagination
+              page={query.data.page}
+              totalPages={query.data.totalPages}
+              total={query.data.total}
+              onPageChange={(page) => update({ page })}
+            />
+          )}
+        </>
+      )}
+    </>
   );
 }

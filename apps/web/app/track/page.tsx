@@ -1,109 +1,159 @@
 'use client';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { WorkflowStepper } from '@/components/business/workflow-stepper';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Shield, ArrowLeft, Clock } from 'lucide-react';
+import { InlineError } from '@/components/ui/error-state';
+import { api } from '@/lib/api-client';
+import { formatDateTime, humanise, statusBadge } from '@/lib/format';
+import type { PublicReportStatus } from '@/lib/types';
 
-export default function ReportTrackingPortal() {
-  const [refInput, setRefInput] = useState('CAT-2026-00000001');
-  const [hasSearched, setHasSearched] = useState(false);
+export default function TrackReportPage() {
+  const [referenceNumber, setReferenceNumber] = useState('');
+  const [trackingCode, setTrackingCode] = useState('');
+  const [status, setStatus] = useState<PublicReportStatus | null>(null);
+  const [error, setError] = useState<unknown>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const trackingSteps = [
-    { id: '1', label: 'Report Received', timestamp: '28 Sep 2026, 14:35' },
-    { id: '2', label: 'Under Review', timestamp: '28 Sep 2026, 16:10' },
-    { id: '3', label: 'Assigned to Lead Agency', timestamp: '29 Sep 2026, 09:15' },
-    { id: '4', label: 'Active Investigation', timestamp: 'In Progress' },
-    { id: '5', label: 'Case Disposition', timestamp: 'Pending' },
-  ];
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setStatus(null);
+    setIsSubmitting(true);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (refInput.trim()) {
-      setHasSearched(true);
+    try {
+      const result = await api.public<PublicReportStatus>('/public/reports/track', {
+        method: 'POST',
+        body: {
+          referenceNumber: referenceNumber.trim().toUpperCase(),
+          trackingCode: trackingCode.trim().toUpperCase(),
+        },
+      });
+      setStatus(result);
+    } catch (caught) {
+      setError(caught);
+    } finally {
+      setIsSubmitting(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-12 px-4">
-      <div className="max-w-3xl mx-auto">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-neutral-900 mb-6">
-          <ArrowLeft className="w-4 h-4" />
-          <span>Return to CATCHAM Public Home</span>
-        </Link>
+    <div className="min-h-screen bg-neutral-50">
+      <header className="border-b border-neutral-200 bg-neutral-white">
+        <div className="max-w-2xl mx-auto px-5 sm:px-8 h-16 flex items-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm text-neutral-600 hover:text-neutral-950 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Link>
+        </div>
+      </header>
 
-        {/* Search Card */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-center gap-2 text-brand-600 text-xs font-semibold uppercase">
-              <Shield className="w-4 h-4" />
-              <span>Public Inquiry Service</span>
-            </div>
-            <CardTitle className="text-2xl mt-1">Track Your Whistleblower Report</CardTitle>
-            <CardDescription>
-              Enter the unique reference code issued to you upon report submission.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1">
-                <Input
-                  placeholder="e.g. CAT-2026-00000001"
-                  value={refInput}
-                  onChange={(e) => setRefInput(e.target.value)}
-                  className="font-mono text-base"
-                  required
-                />
-              </div>
-              <Button type="submit" variant="primary" className="shrink-0">
-                <Search className="w-4 h-4 mr-1.5" />
-                Track Report
+      <main id="main-content" className="max-w-2xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+        <h1 className="text-xl sm:text-2xl font-bold text-neutral-950">Track a report</h1>
+        <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
+          Both the reference number and the tracking code are required. A reference
+          number alone will not return anything, which is what stops a guessed reference
+          from disclosing a report.
+        </p>
+
+        <Card className="mt-7">
+          <CardContent className="p-5 sm:p-6">
+            <form onSubmit={onSubmit} className="space-y-4" noValidate>
+              <Input
+                label="Reference number"
+                required
+                value={referenceNumber}
+                onChange={(event) => setReferenceNumber(event.target.value)}
+                placeholder="CTM-2026-7F3A91"
+                className="font-mono"
+                autoCapitalize="characters"
+                spellCheck={false}
+              />
+              <Input
+                label="Tracking code"
+                required
+                value={trackingCode}
+                onChange={(event) => setTrackingCode(event.target.value)}
+                placeholder="The code shown once at submission"
+                className="font-mono"
+                autoCapitalize="characters"
+                spellCheck={false}
+              />
+
+              <InlineError error={error} />
+
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-full"
+                isLoading={isSubmitting}
+                disabled={referenceNumber.trim().length === 0 || trackingCode.trim().length === 0}
+              >
+                Check status
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        {/* Tracking Result View */}
-        {hasSearched && (
-          <Card className="animate-in fade-in duration-200">
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <div>
-                <span className="font-mono text-xs font-bold text-neutral-500 uppercase">Status Dossier</span>
-                <CardTitle className="text-xl font-mono text-brand-700 mt-0.5">{refInput}</CardTitle>
-              </div>
-              <Badge status="warning">Active Investigation</Badge>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
-              {/* Stepper */}
-              <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200">
-                <WorkflowStepper steps={trackingSteps} currentStepIndex={3} />
-              </div>
-
-              {/* Status details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div className="p-3.5 bg-neutral-100 rounded-lg">
-                  <span className="text-neutral-400 block mb-1">Assigned Lead Agency</span>
-                  <strong className="text-neutral-900 text-sm">Economic & Financial Crimes Commission (EFCC)</strong>
+        {status && (
+          <Card className="mt-6">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-mono text-xs font-bold text-neutral-500">
+                    {status.referenceNumber}
+                  </p>
+                  <h2 className="mt-1 text-base font-semibold text-neutral-950">
+                    {status.title}
+                  </h2>
+                  <p className="mt-0.5 text-xs text-neutral-500">{status.categoryName}</p>
                 </div>
-                <div className="p-3.5 bg-neutral-100 rounded-lg">
-                  <span className="text-neutral-400 block mb-1">Jurisdiction Resolved</span>
-                  <strong className="text-neutral-900 text-sm">Rivers State Zonal Command</strong>
-                </div>
+                <Badge status={statusBadge(status.status)}>{humanise(status.status)}</Badge>
               </div>
 
-              {/* Confidentiality safe note */}
-              <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-lg text-xs text-neutral-500 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-neutral-400 shrink-0" />
-                <span>To protect investigative integrity, tactical evidence details are confidential to authorized officers.</span>
+              <div className="mt-6 pt-5 border-t border-neutral-100">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  Progress
+                </h3>
+                <ol className="mt-4 space-y-4">
+                  {status.timeline.map((entry, index) => (
+                    <li key={`${entry.action}-${entry.at}`} className="flex gap-3.5">
+                      <div className="flex flex-col items-center shrink-0">
+                        <span className="w-2.5 h-2.5 rounded-full bg-brand-600 mt-1.5" />
+                        {index < status.timeline.length - 1 && (
+                          <span className="w-px flex-1 bg-neutral-200 mt-1" />
+                        )}
+                      </div>
+                      <div className="pb-1 min-w-0">
+                        <p className="text-sm font-medium text-neutral-900">
+                          {humanise(entry.action)}
+                        </p>
+                        <p className="mt-0.5 text-xs text-neutral-600 leading-relaxed">
+                          {entry.description}
+                        </p>
+                        <p className="mt-1 text-[11px] text-neutral-400">
+                          {formatDateTime(entry.at)}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                <p className="mt-6 text-xs text-neutral-500 leading-relaxed">
+                  Investigation detail is not shown here. Only lifecycle milestones are
+                  visible on the public tracking view.
+                </p>
               </div>
             </CardContent>
           </Card>
         )}
-      </div>
+      </main>
     </div>
   );
 }

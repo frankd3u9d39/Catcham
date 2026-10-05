@@ -1,104 +1,234 @@
 'use client';
-import React from 'react';
-import { AppShell } from '@/components/layout/app-shell';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Building2, Plus, MapPin, Users } from 'lucide-react';
 
-export default function OrganizationsDirectoryPage() {
-  const agencies = [
-    {
-      code: 'EFCC',
-      name: 'Economic and Financial Crimes Commission',
-      category: 'LAW_ENFORCEMENT',
-      headquarters: 'Abuja (FCT)',
-      activeOfficers: 1420,
-      departments: ['Financial Crimes', 'Operations', 'Forensics', 'Legal Directorate'],
-      status: 'Active',
-    },
-    {
-      code: 'NPF',
-      name: 'Nigeria Police Force',
-      category: 'LAW_ENFORCEMENT',
-      headquarters: 'Louis Edet House, Abuja',
-      activeOfficers: 38400,
-      departments: ['Criminal Investigation (FCID)', 'Marine Police', 'Anti-Bomb (EOD)'],
-      status: 'Active',
-    },
-    {
-      code: 'NDLEA',
-      name: 'National Drug Law Enforcement Agency',
-      category: 'LAW_ENFORCEMENT',
-      headquarters: 'Abuja (FCT)',
-      activeOfficers: 2150,
-      departments: ['General Investigation', 'Seaport Command', 'Airport Interdiction'],
-      status: 'Active',
-    },
-    {
-      code: 'NERC',
-      name: 'Nigerian Electricity Regulatory Commission',
-      category: 'ENERGY',
-      headquarters: 'Abuja (FCT)',
-      activeOfficers: 380,
-      departments: ['Compliance & Inspectorate', 'Consumer Protection', 'Grid Security'],
-      status: 'Active',
-    },
-  ];
+import React, { useState } from 'react';
+import { Building2, ChevronDown, ChevronRight, MapPin, Users } from 'lucide-react';
+import { AppShell } from '@/components/layout/app-shell';
+import { RequireAuth } from '@/components/layout/require-auth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Select } from '@/components/ui/select';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadingState } from '@/components/ui/loading-state';
+import { ErrorState } from '@/components/ui/error-state';
+import { useAgencyTree } from '@/hooks/use-platform';
+import { humanise } from '@/lib/format';
+import { AGENCY_CATEGORY_OPTIONS } from '@/lib/options';
+import { api } from '@/lib/api-client';
+import { useQuery } from '@tanstack/react-query';
+
+export default function OrganizationsPage() {
+  return (
+    <RequireAuth permissions={['organization:read']}>
+      <AppShell breadcrumbs={[{ label: 'Organizations' }]}>
+        <Organizations />
+      </AppShell>
+    </RequireAuth>
+  );
+}
+
+function Organizations() {
+  const [category, setCategory] = useState('');
+  const query = useAgencyTree(category || undefined);
+  const routing = useRoutingRules();
+
+  if (query.isLoading) {
+    return <LoadingState message="Loading the agency hierarchy" />;
+  }
+
+  if (query.error) {
+    return <ErrorState error={query.error} onRetry={() => void query.refetch()} />;
+  }
+
+  const agencies = query.data ?? [];
 
   return (
-    <AppShell breadcrumbs={[{ label: 'Organizations Directory' }]}>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-950">Participating Agencies & Organizations</h1>
-          <p className="text-xs text-neutral-500 mt-1">
-            Hierarchy: Agency → Department → Zonal/Field Office → Officers. Dynamic, non-hardcoded configuration.
-          </p>
-        </div>
-        <Button variant="primary" size="sm">
-          <Plus className="w-4 h-4 mr-1.5" />
-          Onboard Agency
-        </Button>
+    <>
+      <div className="mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-neutral-950">Organizations</h1>
+        <p className="text-xs text-neutral-500 mt-1">
+          Agencies, their departments and offices, plus which report categories route to
+          each one.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {agencies.map((agency) => (
-          <Card key={agency.code} className="hover:border-neutral-300 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-brand-50 border border-brand-200 rounded-lg flex items-center justify-center font-bold text-brand-700 text-sm">
-                  {agency.code}
-                </div>
-                <div>
-                  <CardTitle className="text-base">{agency.name}</CardTitle>
-                  <p className="text-xs text-neutral-400 mt-0.5">{agency.headquarters}</p>
-                </div>
-              </div>
-              <Badge status="success">{agency.status}</Badge>
+      <Card className="mb-5">
+        <CardContent className="p-4 max-w-xs">
+          <Select
+            label="Category"
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+            options={AGENCY_CATEGORY_OPTIONS}
+          />
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
+        <div className="lg:col-span-2">
+          {agencies.length === 0 ? (
+            <EmptyState
+              icon={<Building2 className="w-8 h-8 text-neutral-400" />}
+              title="No agencies in this category"
+              description="Clear the filter to see every agency on the platform."
+            />
+          ) : (
+            <ul className="space-y-3">
+              {agencies.map((agency) => (
+                <li key={agency.id}>
+                  <AgencyNode agency={agency} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">Routing rules</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-xs">
-              <div className="flex items-center justify-between py-1.5 border-b border-neutral-100">
-                <span className="text-neutral-500">Category Mandate:</span>
-                <strong className="text-neutral-800">{agency.category}</strong>
-              </div>
-              <div className="flex items-center justify-between py-1.5 border-b border-neutral-100">
-                <span className="text-neutral-500">Active Personnel:</span>
-                <strong className="text-neutral-800">{agency.activeOfficers.toLocaleString()} Registered</strong>
-              </div>
-              <div>
-                <span className="text-neutral-500 block mb-1.5">Registered Departments:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {agency.departments.map((dept, idx) => (
-                    <span key={idx} className="bg-neutral-100 text-neutral-700 px-2 py-0.5 rounded text-[11px]">
-                      {dept}
-                    </span>
+            <CardContent className="p-0">
+              {routing.isLoading ? (
+                <LoadingState message="Loading routing" />
+              ) : routing.data?.length === 0 ? (
+                <p className="px-6 pb-5 text-sm text-neutral-500">No routing rules defined.</p>
+              ) : (
+                <ul className="divide-y divide-neutral-100">
+                  {routing.data?.map((rule) => (
+                    <li key={rule.id} className="p-3.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-neutral-900 truncate">
+                          {rule.category.name}
+                        </span>
+                        <span className="text-[10px] font-mono text-neutral-400 shrink-0">
+                          p{rule.priority}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[11px] text-neutral-600">
+                        → {rule.agency.acronym}
+                        {rule.jurisdictionCode && (
+                          <span className="ml-1.5 px-1.5 py-0.5 rounded bg-brand-50 text-brand-700 border border-brand-200">
+                            {rule.jurisdictionCode} only
+                          </span>
+                        )}
+                      </p>
+                    </li>
                   ))}
-                </div>
-              </div>
+                </ul>
+              )}
+              <p className="px-3.5 py-3 border-t border-neutral-100 text-[11px] text-neutral-500 leading-relaxed">
+                Rules are evaluated highest priority first, and a jurisdiction-scoped rule
+                beats a national one for the same category.
+              </p>
             </CardContent>
           </Card>
-        ))}
+        </div>
       </div>
-    </AppShell>
+    </>
   );
+}
+
+function AgencyNode({
+  agency,
+}: {
+  agency: {
+    id: string;
+    code: string;
+    name: string;
+    acronym: string;
+    category: string;
+    jurisdictionScope: string;
+    personnel: number;
+    openCases: number;
+    departments: Array<{ id: string; name: string; code: string; offices: number }>;
+  };
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <Card>
+      <button
+        type="button"
+        onClick={() => setExpanded((current) => !current)}
+        aria-expanded={expanded}
+        className="w-full text-left p-4 flex items-start gap-3 hover:bg-neutral-50/70 transition-colors rounded-xl"
+      >
+        <span className="mt-0.5 text-neutral-400 shrink-0">
+          {expanded ? (
+            <ChevronDown className="w-4 h-4" />
+          ) : (
+            <ChevronRight className="w-4 h-4" />
+          )}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-bold text-neutral-950">{agency.acronym}</span>
+            <Badge status="neutral" showIcon={false}>
+              {humanise(agency.category)}
+            </Badge>
+            <Badge status="info" showIcon={false}>
+              {humanise(agency.jurisdictionScope)}
+            </Badge>
+          </div>
+          <p className="mt-1 text-xs text-neutral-600">{agency.name}</p>
+          <p className="mt-1.5 text-[11px] text-neutral-400 flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-1">
+              <Users className="w-3 h-3" />
+              {agency.personnel} staff
+            </span>
+            <span>{agency.openCases} case{agency.openCases === 1 ? '' : 's'}</span>
+            <span>
+              {agency.departments.length} department
+              {agency.departments.length === 1 ? '' : 's'}
+            </span>
+          </p>
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 pl-11">
+          {agency.departments.length === 0 ? (
+            <p className="text-xs text-neutral-500">No departments recorded.</p>
+          ) : (
+            <ul className="space-y-1.5">
+              {agency.departments.map((department) => (
+                <li
+                  key={department.id}
+                  className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-neutral-200 bg-neutral-50/60"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-neutral-900 truncate">
+                      {department.name}
+                    </p>
+                    <p className="font-mono text-[10px] text-neutral-400">{department.code}</p>
+                  </div>
+                  <span className="text-[11px] text-neutral-500 inline-flex items-center gap-1 shrink-0">
+                    <MapPin className="w-3 h-3" />
+                    {department.offices} office{department.offices === 1 ? '' : 's'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function useRoutingRules() {
+  return useQuery({
+    queryKey: ['routing-rules'],
+    queryFn: () =>
+      api.get<
+        Array<{
+          id: string;
+          priority: number;
+          jurisdictionCode: string | null;
+          agency: { name: string; acronym: string };
+          category: { code: string; name: string };
+        }>
+      >('/organizations/routing-rules'),
+    staleTime: 5 * 60_000,
+  });
 }
