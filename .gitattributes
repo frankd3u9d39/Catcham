@@ -1,0 +1,45 @@
+# Normalise line endings. Without this, a Windows checkout rewrites files to
+# CRLF and a later commit from macOS or Linux shows every line as changed.
+# Text is stored as LF in the repository and checked out as LF everywhere.
+* text=auto eol=lf
+
+# Scripts whose interpreter cares about the ending, regardless of platform.
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Windows batch files break if they are not CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary. Listing these stops git attempting line-ending conversion or a
+# textual merge on content where either would corrupt the file.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.mp3 binary
+*.mp4 binary
+*.wav binary
+*.zip binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+
+# SQLite databases and evidence blobs are gitignored, but marking them binary
+# means an accidental `git add -f` does not corrupt the file.
+*.db binary
+*.db-wal binary
+*.db-shm binary
+*.sqlite binary
+
+# Generated. Collapsed in GitHub diffs and excluded from language statistics;
+# the lockfile is still committed and still reviewed when it matters.
+pnpm-lock.yaml linguist-generated=true
+
+# Prisma migrations are generated but worth reading in a review, so they are
+# only excluded from language statistics.
+prisma/migrations/**/*.sql linguist-vendored=false
