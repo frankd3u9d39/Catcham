@@ -12,6 +12,7 @@ import { InlineError } from '@/components/ui/error-state';
 import { useReportCategories } from '@/hooks/use-reports';
 import { useJurisdictions } from '@/hooks/use-platform';
 import { api } from '@/lib/api-client';
+import { firestoreService } from '@/lib/firebase';
 import type { SubmissionReceipt } from '@/lib/types';
 
 const DRAFT_KEY_STORAGE = 'catcham.draftKey';
@@ -137,6 +138,24 @@ export default function SubmitReportPage() {
       });
 
       setReceipt(result);
+
+      // Persist to Cloud Firestore in catcham-app project
+      void firestoreService.saveReport({
+        referenceNumber: result.referenceNumber,
+        trackingCode: result.trackingCode || '',
+        title: form.title.trim(),
+        category: form.categoryId,
+        narrative: form.description.trim(),
+        assignedAgency: result.routedTo || 'Awaiting Triage Routing',
+        state: form.stateCode ? `${form.stateCode} State` : 'National Domain',
+        status: result.status || 'SUBMITTED',
+        priority: 'MEDIUM',
+        isAnonymous: form.isAnonymous,
+        contactEmail: form.isAnonymous ? undefined : form.contactEmail.trim() || undefined,
+        submittedAt: result.submittedAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
       if (draftKey) {
         void api
           .public(`/public/reports/drafts/${draftKey}`, { method: 'DELETE' })

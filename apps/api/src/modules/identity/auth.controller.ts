@@ -4,7 +4,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { UsersService } from './users.service';
-import { ChangePasswordDto, LoginDto, RefreshTokenDto } from './dto/auth.dto';
+import { ChangePasswordDto, CreateUserDto, LoginDto, RefreshTokenDto } from './dto/auth.dto';
 import { Public } from '../../common/decorators/permissions.decorator';
 import { CurrentUser, type AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 
@@ -15,6 +15,15 @@ export class AuthController {
     private readonly auth: AuthService,
     private readonly users: UsersService,
   ) {}
+
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('register')
+  @ApiOperation({ summary: 'Register a new citizen complainant account' })
+  async register(@Body() dto: CreateUserDto, @Req() request: Request) {
+    await this.users.register(dto);
+    return this.auth.login({ email: dto.email, password: dto.password }, requestContext(request));
+  }
 
   @Public()
   // Tighter than the global limit: this is the endpoint worth brute-forcing.

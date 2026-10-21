@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { InlineError } from '@/components/ui/error-state';
 import { api } from '@/lib/api-client';
+import { firestoreService } from '@/lib/firebase';
 import { formatDateTime, humanise, statusBadge } from '@/lib/format';
 import type { PublicReportStatus } from '@/lib/types';
 
@@ -35,6 +36,31 @@ export default function TrackReportPage() {
       });
       setStatus(result);
     } catch (caught) {
+      // Check Cloud Firestore for this reference
+      try {
+        const firestoreDoc = await firestoreService.getReportByReference(referenceNumber);
+        if (firestoreDoc) {
+          setStatus({
+            referenceNumber: firestoreDoc.referenceNumber,
+            title: firestoreDoc.title,
+            categoryName: firestoreDoc.category,
+            status: firestoreDoc.status,
+            submittedAt: firestoreDoc.submittedAt,
+            updatedAt: firestoreDoc.updatedAt,
+            timeline: firestoreDoc.timeline || [
+              {
+                action: firestoreDoc.status,
+                description: 'Record retrieved live from Cloud Firestore database.',
+                at: firestoreDoc.submittedAt,
+              },
+            ],
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (fErr) {
+        console.error('Firestore track error:', fErr);
+      }
       setError(caught);
     } finally {
       setIsSubmitting(false);

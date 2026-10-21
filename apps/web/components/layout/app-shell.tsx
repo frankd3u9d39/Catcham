@@ -7,13 +7,14 @@ import { Breadcrumbs, BreadcrumbItem } from './breadcrumbs';
 interface AppShellProps {
   children: React.ReactNode;
   breadcrumbs?: BreadcrumbItem[];
+  customSidebar?: React.ReactNode;
 }
 
-export const AppShell: React.FC<AppShellProps> = ({ children, breadcrumbs }) => {
+export const AppShell: React.FC<AppShellProps> = ({ children, breadcrumbs, customSidebar }) => {
   return (
     <div className="min-h-screen bg-neutral-50 flex">
       {/* Sovereign Left Sidebar */}
-      <Sidebar />
+      {customSidebar ? customSidebar : <Sidebar />}
 
       {/* Main Column */}
       <div className="flex-1 flex flex-col min-w-0">

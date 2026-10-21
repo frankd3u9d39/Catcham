@@ -160,7 +160,19 @@ export async function seedDemoData(prisma: PrismaClient): Promise<void> {
     usersByEmail.set(account.email, user.id);
   }
 
-  console.log(`  accounts: ${ACCOUNTS.length} (password from SEED_ADMIN_PASSWORD)`);
+  // Create demo citizen complainant account
+  const citizenUser = await prisma.user.create({
+    data: {
+      email: 'citizen@catcham.local',
+      fullName: 'Tariq Mohammed (Citizen Reporter)',
+      phoneNumber: '+234 803 123 4567',
+      passwordHash,
+      status: 'ACTIVE',
+    },
+  });
+  usersByEmail.set('citizen@catcham.local', citizenUser.id);
+
+  console.log(`  accounts: ${ACCOUNTS.length + 1} (including citizen@catcham.local)`);
 
   const trackingCodes: Array<{ reference: string; code: string }> = [];
   const reportIds: string[] = [];
@@ -175,6 +187,15 @@ export async function seedDemoData(prisma: PrismaClient): Promise<void> {
     const reference = `CTM-${createdAt.getFullYear()}-${randomBytes(3).toString('hex').toUpperCase()}`;
     const trackingCode = report.isAnonymous ? randomTrackingCode() : null;
 
+    const isCitizenOwned = index === 2 || index === 4;
+    const isAnonymous = isCitizenOwned ? false : report.isAnonymous;
+    const contactEmail = isCitizenOwned
+      ? citizenUser.email
+      : 'contactEmail' in report
+        ? report.contactEmail
+        : null;
+    const submitterId = isCitizenOwned ? citizenUser.id : null;
+
     const created = await prisma.report.create({
       data: {
         referenceNumber: reference,
@@ -182,8 +203,9 @@ export async function seedDemoData(prisma: PrismaClient): Promise<void> {
         title: report.title,
         description: report.description,
         categoryId,
-        isAnonymous: report.isAnonymous,
-        contactEmail: 'contactEmail' in report ? report.contactEmail : null,
+        isAnonymous,
+        contactEmail,
+        submitterId,
         stateCode: report.stateCode,
         lgaCode: report.lgaCode,
         latitude: 'latitude' in report ? report.latitude : null,

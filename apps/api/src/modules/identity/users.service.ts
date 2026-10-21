@@ -100,6 +100,37 @@ export class UsersService {
     return toUserSummary(user);
   }
 
+  async register(dto: CreateUserDto): Promise<UserSummary> {
+    const email = dto.email.toLowerCase();
+
+    const existing = await this.prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      throw new BadRequestException('An account with that email already exists.');
+    }
+
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        fullName: dto.fullName.trim(),
+        phoneNumber: dto.phoneNumber,
+        passwordHash: await hashSecret(dto.password),
+        status: 'ACTIVE',
+      },
+      include: { memberships: { include: { agency: true, role: true } } },
+    });
+
+    await this.audit.record({
+      actorId: user.id,
+      actorLabel: user.email,
+      action: 'USER_REGISTERED',
+      resource: 'user',
+      resourceId: user.id,
+      metadata: { email },
+    });
+
+    return toUserSummary(user);
+  }
+
   async update(id: string, dto: UpdateUserDto, actor: AuthenticatedUser): Promise<UserSummary> {
     await this.findById(id);
 

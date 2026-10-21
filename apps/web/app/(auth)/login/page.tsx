@@ -66,28 +66,28 @@ function LoginForm() {
       {/* Left: the form. First in the DOM so it is reached first on mobile. */}
       <div className="flex items-center justify-center px-5 py-12 sm:px-8">
         <div className="w-full max-w-sm">
-          <div className="flex items-center gap-2.5 mb-8">
+          <div className="flex items-center gap-2.5 mb-6">
             <Image src="/logo.png" alt="" width={36} height={36} className="rounded" />
             <div className="leading-tight">
-              <p className="text-base font-bold text-neutral-950">CATCHAM</p>
-              <p className="text-[11px] text-neutral-500">Agency portal</p>
+              <p className="text-base font-bold text-neutral-950 font-serif">CATCH-AM</p>
+              <p className="text-[11px] text-emerald-700 font-semibold font-mono">Unified Access Portal</p>
             </div>
           </div>
 
-          <h1 className="text-xl font-bold text-neutral-950">Sign in</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Use the account issued by your agency administrator.
+          <h1 className="text-xl font-bold text-neutral-950">Sign In to Platform</h1>
+          <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
+            One secure login for both <strong>Citizen Complainants</strong> and <strong>Agency Law Enforcement Officers</strong>.
           </p>
 
-          <form onSubmit={onSubmit} className="mt-7 space-y-4" noValidate>
+          <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
             <Input
-              label="Work email"
+              label="Email address"
               type="email"
               autoComplete="username"
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="officer@agency.gov.ng"
+              placeholder="citizen@catcham.local or officer@agency.gov.ng"
             />
             <Input
               label="Password"
@@ -104,29 +104,28 @@ function LoginForm() {
               type="submit"
               variant="primary"
               size="lg"
-              className="w-full"
+              className="w-full shadow-md"
               isLoading={isSubmitting}
               disabled={email.length === 0 || password.length === 0}
             >
-              Sign in
+              Sign In to Dashboard
             </Button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-neutral-200 text-xs text-neutral-500 space-y-2">
+          <div className="mt-6 pt-5 border-t border-neutral-200 text-xs text-neutral-500 space-y-2">
             <p>
-              Not an officer?{' '}
-              <Link href="/report" className="text-brand-600 font-medium hover:underline">
-                Submit a report
+              Need to submit a quick report anonymously?{' '}
+              <Link href="/report" className="text-emerald-700 font-semibold hover:underline">
+                Submit a Report
               </Link>{' '}
               or{' '}
-              <Link href="/track" className="text-brand-600 font-medium hover:underline">
-                track an existing one
+              <Link href="/track" className="text-emerald-700 font-semibold hover:underline">
+                Track by Reference Code
               </Link>
               .
             </p>
-            <p>
-              Signing in creates an audit record that includes your address and
-              browser.
+            <p className="text-[11px] text-neutral-400">
+              Authenticated sessions are cryptographically logged with tamper-evident audit hashing.
             </p>
           </div>
         </div>
@@ -135,31 +134,37 @@ function LoginForm() {
       {/* Right: context panel, hidden on small screens where it would just push
           the form down. */}
       <div className="hidden lg:flex flex-col justify-center bg-neutral-900 text-neutral-200 px-14 py-16">
-        <ShieldCheck className="w-10 h-10 text-brand-400 mb-7" />
-        <h2 className="text-2xl font-semibold text-neutral-white leading-snug max-w-md">
-          Reports, cases and evidence, with the trail intact.
+        <ShieldCheck className="w-10 h-10 text-emerald-400 mb-7" />
+        <h2 className="text-2xl font-bold font-serif text-white leading-snug max-w-md">
+          One Platform. Unified Intelligence & Citizen Oversight.
         </h2>
-        <ul className="mt-8 space-y-4 text-sm text-neutral-400 max-w-md">
+        <ul className="mt-8 space-y-5 text-sm text-neutral-300 max-w-md">
           <li className="flex gap-3">
-            <span className="text-brand-400 font-mono text-xs pt-0.5 shrink-0">01</span>
-            <span>
-              Reports route to the owning agency by category and jurisdiction, and the
-              routing decision is recorded on the report timeline.
-            </span>
+            <span className="text-emerald-400 font-mono text-xs pt-0.5 shrink-0 font-bold">01</span>
+            <div>
+              <p className="font-semibold text-white">For Citizens & Complainants</p>
+              <p className="text-xs text-neutral-400 mt-0.5">
+                Monitor your complaints from initial intake through multi-agency investigation to final resolution with real-time milestones.
+              </p>
+            </div>
           </li>
           <li className="flex gap-3">
-            <span className="text-brand-400 font-mono text-xs pt-0.5 shrink-0">02</span>
-            <span>
-              Case progression follows a workflow definition held in the database, with
-              each transition gated on a permission.
-            </span>
+            <span className="text-emerald-400 font-mono text-xs pt-0.5 shrink-0 font-bold">02</span>
+            <div>
+              <p className="font-semibold text-white">For Law Enforcement & Agencies</p>
+              <p className="text-xs text-neutral-400 mt-0.5">
+                Intake officers, investigators, and supervisors collaborate across EFCC, NOSDRA, Police, and Customs on linked intelligence.
+              </p>
+            </div>
           </li>
           <li className="flex gap-3">
-            <span className="text-brand-400 font-mono text-xs pt-0.5 shrink-0">03</span>
-            <span>
-              Every evidence file is hashed at intake and its custody entries are
-              hash-chained, so an altered record fails verification.
-            </span>
+            <span className="text-emerald-400 font-mono text-xs pt-0.5 shrink-0 font-bold">03</span>
+            <div>
+              <p className="font-semibold text-white">Cryptographic Whistleblower Protection</p>
+              <p className="text-xs text-neutral-400 mt-0.5">
+                Evidence custody records are hash-chained and submitter identities are protected under sovereign DICON / GITH authority.
+              </p>
+            </div>
           </li>
         </ul>
       </div>

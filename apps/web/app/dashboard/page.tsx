@@ -22,6 +22,9 @@ import { useAuth } from '@/providers/auth-provider';
 import { useInvestigations, useWorkload } from '@/hooks/use-investigations';
 import { useReports } from '@/hooks/use-reports';
 import { useOverdueCases } from '@/hooks/use-platform';
+import { useSearchParams } from 'next/navigation';
+import { CitizenSidebar } from '@/components/layout/citizen-sidebar';
+import { CitizenDashboardView } from '@/components/portal/citizen-dashboard-view';
 import {
   formatRelative,
   humanise,
@@ -32,8 +35,99 @@ import {
 
 export default function DashboardPage() {
   return (
+    <React.Suspense fallback={<LoadingState message="Loading dashboard..." />}>
+      <DashboardContainer />
+    </React.Suspense>
+  );
+}
+
+function DashboardContainer() {
+  const { user, can } = useAuth();
+  const searchParams = useSearchParams();
+  const urlTab = searchParams.get('tab');
+
+  const [viewMode, setViewMode] = React.useState<'citizen' | 'officer' | null>(null);
+  const [activeTab, setActiveTab] = React.useState(urlTab || 'overview');
+
+  React.useEffect(() => {
+    if (urlTab) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
+
+  const isOfficer =
+    can('report:read') ||
+    can('investigation:read') ||
+    can('analytics:read') ||
+    (user?.roleCodes && user.roleCodes.length > 0);
+
+  // If user has no officer permissions, they are a Citizen.
+  // If user is an officer, default to 'officer' unless they toggle 'citizen' mode.
+  const currentMode = viewMode ?? (isOfficer ? 'officer' : 'citizen');
+
+  if (currentMode === 'citizen') {
+    return (
+      <RequireAuth>
+        <AppShell
+          breadcrumbs={[{ label: 'Citizen Portal' }, { label: humanise(activeTab) }]}
+          customSidebar={
+            <CitizenSidebar
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              complaintCount={3}
+              isOfficer={Boolean(isOfficer)}
+              onToggleOfficerMode={() =>
+                setViewMode(currentMode === 'citizen' ? 'officer' : 'citizen')
+              }
+            />
+          }
+        >
+          {isOfficer && (
+            <div className="mb-5 bg-emerald-950/80 border border-emerald-500/30 rounded-xl p-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-white shadow-sm">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>
+                  <strong>Officer Simulation Mode:</strong> You are previewing the citizen complainant dashboard.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewMode('officer')}
+                className="text-xs font-bold text-emerald-300 hover:text-white underline self-start sm:self-auto cursor-pointer"
+              >
+                Return to Agency Command View &rarr;
+              </button>
+            </div>
+          )}
+          <CitizenDashboardView
+            user={user}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        </AppShell>
+      </RequireAuth>
+    );
+  }
+
+  return (
     <RequireAuth>
-      <AppShell breadcrumbs={[{ label: 'Dashboard' }]}>
+      <AppShell breadcrumbs={[{ label: 'Agency Dashboard' }]}>
+        <div className="mb-4 bg-slate-900 border border-slate-700/80 rounded-xl p-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-white shadow-sm">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="font-semibold text-slate-200">
+              Agency Command Portal ({user?.roleCodes.map(humanise).join(', ') || 'Officer'})
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setViewMode('citizen')}
+            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 underline self-start sm:self-auto flex items-center gap-1 cursor-pointer"
+          >
+            <span>Switch to Citizen Complainant View</span>
+            <span>&rarr;</span>
+          </button>
+        </div>
         <Dashboard />
       </AppShell>
     </RequireAuth>

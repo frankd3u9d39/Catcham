@@ -1,0 +1,34 @@
+# Multi-stage Dockerfile for NestJS API
+FROM node:20-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+FROM base AS builder
+WORKDIR /app
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml turbo.json ./
+COPY prisma ./prisma
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY apps/mobile/package.json ./apps/mobile/package.json
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm db:generate
+RUN pnpm --filter @catcham/api build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+RUN corepack enable
+
+COPY --from=builder /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml ./
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+
+RUN mkdir -p /app/data/evidence
+
+EXPOSE 4000
+CMD ["node", "apps/api/dist/main.js"]
