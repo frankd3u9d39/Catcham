@@ -33,6 +33,24 @@ export interface FirestoreReport {
   timeline?: Array<{ action: string; description: string; at: string }>;
 }
 
+export interface CredicorpApplication {
+  id?: string;
+  applicationRef: string;
+  applicantName: string;
+  email: string;
+  phone: string;
+  nin: string;
+  category: string;
+  institutionOrOrg?: string;
+  preferredDevice: string;
+  deviceModelSelected: string;
+  repaymentPlan: string;
+  state: string;
+  lga?: string;
+  status: string;
+  appliedAt: string;
+}
+
 function toFirestoreFields(obj: Record<string, any>): Record<string, any> {
   const fields: Record<string, any> = {};
   for (const [key, value] of Object.entries(obj)) {
@@ -136,6 +154,53 @@ export const firestoreService = {
     } catch (err) {
       console.error('Failed to query report by reference:', err);
       return null;
+    }
+  },
+
+  /**
+   * Save a CREDICORP C.L.I.C.K.D Expression of Interest / Device Credit Application
+   */
+  async saveCredicorpApplication(app: CredicorpApplication): Promise<{ success: boolean; firestoreId?: string }> {
+    try {
+      const response = await fetch(`${FIRESTORE_BASE_URL}/credicorp_applications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: toFirestoreFields(app),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Firestore error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const firestoreId = data.name?.split('/').pop();
+      return { success: true, firestoreId };
+    } catch (err) {
+      console.error('Failed to save Credicorp application to Firestore:', err);
+      return { success: false };
+    }
+  },
+
+  /**
+   * Fetch CREDICORP applications from Firestore
+   */
+  async getCredicorpApplications(): Promise<CredicorpApplication[]> {
+    try {
+      const response = await fetch(`${FIRESTORE_BASE_URL}/credicorp_applications`);
+      if (!response.ok) return [];
+      const data = await response.json();
+      if (!data.documents) return [];
+
+      return data.documents.map((doc: any) => {
+        const id = doc.name?.split('/').pop();
+        const parsed = fromFirestoreFields(doc.fields || {});
+        return { id, ...parsed } as CredicorpApplication;
+      });
+    } catch (err) {
+      console.error('Failed to fetch Credicorp applications from Firestore:', err);
+      return [];
     }
   },
 };

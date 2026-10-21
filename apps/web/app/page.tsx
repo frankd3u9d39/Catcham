@@ -4,35 +4,42 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/providers/auth-provider';
 import {
-  Shield,
-  ShieldCheck,
-  Award,
-  Clock,
-  Phone,
-  Play,
+  AlertTriangle,
   ArrowRight,
-  Users,
-  CheckCircle2,
-  Mail,
-  MapPin,
-  Lock,
-  LogIn,
-  Search,
-  Eye,
-  Menu,
-  X,
-  FileText,
-  Fuel,
-  Globe,
-  Layers,
-  Flame,
+  Award,
   Building2,
-  FolderLock,
+  CheckCircle2,
+  Clock,
   Compass,
   Cpu,
+  CreditCard,
+  ExternalLink,
+  Eye,
+  FileText,
+  Flame,
+  FolderLock,
+  Fuel,
+  Globe,
+  GraduationCap,
+  Laptop,
+  Layers,
+  Lock,
+  LogIn,
+  Mail,
+  MapPin,
+  Menu,
+  Phone,
+  Play,
+  Scale,
+  Search,
+  Shield,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  Tablet,
   Target,
-  AlertTriangle,
-  Scale
+  Users,
+  X,
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -204,6 +211,15 @@ export default function LandingPage() {
               Operational Domains
             </a>
             <a
+              href="#credicorp-partnership"
+              className="hover:text-[#006B3C] transition-colors flex items-center gap-1.5"
+            >
+              <span>CREDICORP C.L.I.C.K.D</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold">
+                PARTNER
+              </span>
+            </a>
+            <a
               href="#workflow"
               className="hover:text-[#006B3C] transition-colors"
             >
@@ -278,6 +294,16 @@ export default function LandingPage() {
               className="font-semibold text-slate-800 hover:text-[#006B3C] py-3 border-b border-slate-100"
             >
               Operational Domains
+            </a>
+            <a
+              href="#credicorp-partnership"
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-semibold text-slate-800 hover:text-[#006B3C] py-3 border-b border-slate-100 flex items-center justify-between"
+            >
+              <span>CREDICORP C.L.I.C.K.D Devices</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">
+                PARTNER
+              </span>
             </a>
             <a
               href="#workflow"
@@ -616,6 +642,147 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* 5.5 STRATEGIC PARTNERSHIP: FG CREDICORP C.L.I.C.K.D PROGRAMME */}
+      <section id="credicorp-partnership" className="scroll-mt-20 py-16 sm:py-24 bg-gradient-to-b from-[#060D17] via-[#0A1A28] to-[#060D17] text-white border-y border-emerald-900/40 relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold tracking-wider mb-4">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>GITH & FG CREDICORP STRATEGIC ALLIANCE</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-serif text-white tracking-tight">
+              C.L.I.C.K.D Device Credit Programme
+            </h2>
+            <p className="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
+              Discussions are actively progressing between <strong>GITH (DICON)</strong> and the <strong>Federal Government Consumer Credit Corporation (CREDICORP)</strong>. Active Catcham subscribers, tertiary students, and verified civic monitors can access laptops, smartphones, and field tablets on subsidized, flexible consumer credit.
+            </p>
+          </div>
+
+          {/* 3 Value Pillars */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="rounded-2xl border border-slate-800 bg-[#0B1522]/90 p-6 sm:p-7 space-y-4 hover:border-emerald-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Students & Academic Researchers</h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Equipping Nigerian university, polytechnic, and NYSC corps members with modern laptops to advance digital literacy, cybersecurity analysis, and evidence-based civic reporting.
+              </p>
+              <div className="pt-2 text-xs font-mono text-emerald-400 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>0% Downpayment on Approved Tiers</span>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-800 bg-[#0B1522]/90 p-6 sm:p-7 space-y-4 hover:border-emerald-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Civic Whistleblowers & Field Reporters</h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Empowering community vigilance monitors with tamper-evident, geotag-enabled 5G smartphones and rugged tablets to document environmental harm, pipeline theft, and security hazards.
+              </p>
+              <div className="pt-2 text-xs font-mono text-emerald-400 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Pre-installed Secure Forensic Client</span>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-800 bg-[#0B1522]/90 p-6 sm:p-7 space-y-4 hover:border-emerald-500/40 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <CreditCard className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Priority Subscriber Clearance</h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                GITH platform subscribers benefit from an expedited credit underwriting track through CREDICORP&apos;s C.L.I.C.K.D pipeline, with flexible repayment terms spanning 6 to 18 months.
+              </p>
+              <div className="pt-2 text-xs font-mono text-emerald-400 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Fast-track NIN & Biometric Matching</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Device Showcase Preview Strip */}
+          <div className="rounded-2xl border border-emerald-900/60 bg-gradient-to-r from-[#071524] via-[#0B201A] to-[#071524] p-6 sm:p-10 shadow-2xl">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold">
+                  FG CREDICORP HARDWARE ALLOCATIONS
+                </span>
+                <h3 className="text-xl sm:text-2xl font-bold font-serif text-white mt-1">
+                  Accessible Digital Hardware on Subsidized Credit
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
+                  Devices are pre-calibrated for high data security, verified against national identity databases, and distributed through accredited state tertiary and regional logistics hubs.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href={isAuthenticated ? "/dashboard?tab=credicorp" : "/register?next=/dashboard?tab=credicorp"}
+                  className="px-6 py-3 rounded-lg bg-[#006B3C] hover:bg-[#005731] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg flex items-center gap-2"
+                >
+                  <Laptop className="w-4 h-4" />
+                  <span>Apply on Citizen Dashboard &rarr;</span>
+                </Link>
+
+                <a
+                  href="https://msmeafricaonline.com/call-for-applications-fg-credicorp-c-l-i-c-k-d-programme-for-students-and-entrepreneurs-credit-for-laptops-and-digital-devices/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-3 rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-900/80 hover:bg-slate-800 text-slate-200 text-xs font-bold transition-all flex items-center gap-2"
+                >
+                  <span>Official Call for Applications</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                </a>
+              </div>
+            </div>
+
+            {/* Quick 3 Device Preview Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
+              <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                    LAPTOP WORKSTATION
+                  </span>
+                  <span className="text-xs font-mono font-bold text-emerald-400">₦16,500/mo</span>
+                </div>
+                <h4 className="text-sm font-bold text-white">Pro-Book 15.6-inch GITH Workstation</h4>
+                <p className="text-[11px] text-slate-400">Intel Core i5, 16GB RAM, 512GB SSD, Preloaded Ubuntu/Win11, CATCH-AM Portal</p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                    FIELD 5G SMARTPHONE
+                  </span>
+                  <span className="text-xs font-mono font-bold text-emerald-400">₦9,800/mo</span>
+                </div>
+                <h4 className="text-sm font-bold text-white">SecureCam 5G Reporter Phone</h4>
+                <p className="text-[11px] text-slate-400">108MP Geotagging Sensor, 5000mAh Battery, Knox Security, GPS Watermark Camera</p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                    RUGGED FIELD TABLET
+                  </span>
+                  <span className="text-xs font-mono font-bold text-emerald-400">₦13,500/mo</span>
+                </div>
+                <h4 className="text-sm font-bold text-white">Atlas Rugged Field Tablet 11-inch</h4>
+                <p className="text-[11px] text-slate-400">11-inch 2K High-Bright Display, 4G LTE + GPS/GLONASS, IP68 Waterproof, Stylus Included</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 6. THE CATCH-AM DIFFERENCE (Platform Architecture & Pillars) */}
       <section id="architecture" className="scroll-mt-20 py-14 sm:py-20 bg-[#F1F5F9] border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
@@ -865,6 +1032,12 @@ export default function LandingPage() {
               <li>
                 <a href="#architecture" className="hover:text-white transition-colors">
                   Platform Architecture
+                </a>
+              </li>
+              <li>
+                <a href="#credicorp-partnership" className="hover:text-emerald-400 text-emerald-300 font-semibold transition-colors flex items-center gap-1">
+                  <span>CREDICORP Device Credit</span>
+                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-900/60 text-emerald-400 font-bold">FG</span>
                 </a>
               </li>
               <li>

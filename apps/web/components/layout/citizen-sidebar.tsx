@@ -14,6 +14,7 @@ import {
   FileSearch,
   FileText,
   Home,
+  Laptop,
   Lock,
   LogOut,
   Radio,
@@ -97,6 +98,18 @@ export const CitizenSidebar: React.FC<CitizenSidebarProps> = ({
           label: 'Whistleblower Vault',
           icon: <Shield className={ICON} />,
           href: '/dashboard?tab=privacy',
+        },
+      ],
+    },
+    {
+      group: 'Subscriber Benefits',
+      items: [
+        {
+          id: 'credicorp',
+          label: 'CREDICORP C.L.I.C.K.D',
+          icon: <Laptop className={ICON} />,
+          badge: 'FG PARTNER',
+          href: '/dashboard?tab=credicorp',
         },
       ],
     },
