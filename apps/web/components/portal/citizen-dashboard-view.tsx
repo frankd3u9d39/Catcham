@@ -629,10 +629,10 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900 to-emerald-950/60 border border-neutral-800 p-6 sm:p-8 text-white shadow-xl">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-medium mb-3">
+            {/* <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-medium mb-3">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>CITIZEN COMPLAINANT PORTAL · ACTIVE ENCRYPTED SESSION</span>
-            </div>
+            </div> */}
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-serif text-white">
               Welcome, {user?.fullName ?? 'Citizen Reporter'}
             </h1>
@@ -642,39 +642,36 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <Button
-              variant="primary"
-              className="gap-2 shadow-lg shadow-emerald-950/50 cursor-pointer"
-              onClick={() => {
-                setNewReceipt(null);
-                onTabChange?.('submit');
-              }}
-            >
-              <FilePlus className="w-4 h-4" />
-              <span>Submit New Report</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="gap-2 border-neutral-700 text-neutral-200 hover:bg-neutral-800 cursor-pointer"
-              onClick={() => onTabChange?.('track')}
-            >
-              <FileSearch className="w-4 h-4" />
-              <span>Track Complaint</span>
-            </Button>
-            <Button
-              variant="outline"
-              className={cn(
-                "gap-2 border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/40 cursor-pointer transition-all",
-                activeTab === 'credicorp' && "bg-emerald-800 text-white border-emerald-400 shadow-md"
-              )}
-              onClick={() => onTabChange?.('credicorp')}
-            >
-              <Laptop className="w-4 h-4 text-emerald-400" />
-              <span>CREDICORP Device Credit</span>
-              <span className="text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded">
-                NEW
-              </span>
-            </Button>
+            <Link href="/report">
+              <Button
+                variant="primary"
+                className="gap-2 shadow-lg shadow-emerald-950/50 cursor-pointer"
+              >
+                <FilePlus className="w-4 h-4" />
+                <span>Submit New Report</span>
+              </Button>
+            </Link>
+            <Link href="/track">
+              <Button
+                variant="outline"
+                className="gap-2 border-neutral-700 text-neutral-200 hover:bg-neutral-800 cursor-pointer"
+              >
+                <FileSearch className="w-4 h-4" />
+                <span>Track Complaint</span>
+              </Button>
+            </Link>
+            <Link href="/credicorp">
+              <Button
+                variant="outline"
+                className="gap-2 border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/40 cursor-pointer transition-all"
+              >
+                <Laptop className="w-4 h-4 text-emerald-400" />
+                <span>CREDICORP Device Credit</span>
+                <span className="text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded">
+                  NEW
+                </span>
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -1833,14 +1830,15 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-              <Button
-                variant="primary"
-                className="gap-2 bg-[#006B3C] hover:bg-[#005731] text-white shadow-lg font-bold text-xs uppercase tracking-wider py-3.5 px-6 cursor-pointer"
-                onClick={() => onTabChange?.('credicorp')}
-              >
-                <Laptop className="w-4 h-4" />
-                <span>Apply for Device Credit &rarr;</span>
-              </Button>
+              <Link href="/credicorp">
+                <Button
+                  variant="primary"
+                  className="gap-2 bg-[#006B3C] hover:bg-[#005731] text-white shadow-lg font-bold text-xs uppercase tracking-wider py-3.5 px-6 cursor-pointer"
+                >
+                  <Laptop className="w-4 h-4" />
+                  <span>Apply for Device Credit &rarr;</span>
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="absolute -right-8 -top-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
@@ -2108,15 +2106,16 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                   Enter your reference number in the search box above to track a case in real-time, or lodge your first encrypted disclosure.
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs font-bold border-emerald-600 text-emerald-700 hover:bg-emerald-50 cursor-pointer"
-                onClick={() => onTabChange?.('submit')}
-              >
-                <FilePlus className="w-3.5 h-3.5 mr-1.5" />
-                <span>Submit a Report Now</span>
-              </Button>
+              <Link href="/report">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-bold border-emerald-600 text-emerald-700 hover:bg-emerald-50 cursor-pointer"
+                >
+                  <FilePlus className="w-3.5 h-3.5 mr-1.5" />
+                  <span>Submit a Report Now</span>
+                </Button>
+              </Link>
             </div>
           )}
         </CardContent>
@@ -2135,7 +2134,18 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 p-1 bg-neutral-100 rounded-lg text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/complaints">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 border-neutral-300 text-neutral-700 hover:bg-neutral-100 cursor-pointer text-xs"
+              >
+                <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Open Complaints Portal &rarr;</span>
+              </Button>
+            </Link>
+            <div className="flex items-center gap-1.5 p-1 bg-neutral-100 rounded-lg text-xs">
             <button
               type="button"
               onClick={() => setFilterStatus('ALL')}
@@ -2170,7 +2180,8 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
               Resolved ({complaints.filter((c) => c.status === 'RESOLVED' || c.status === 'CLOSED').length})
             </button>
           </div>
-        </CardHeader>
+        </div>
+      </CardHeader>
 
         <CardContent className="p-0">
           <div className="divide-y divide-neutral-200">
@@ -2187,15 +2198,16 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                     You have not submitted any incident reports. Once you file an encrypted report, its reference number, tracking token, and investigation milestones will appear here.
                   </p>
                 </div>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => onTabChange?.('submit')}
-                  className="gap-2 cursor-pointer bg-[#006B3C] hover:bg-[#005731]"
-                >
-                  <FilePlus className="w-4 h-4" />
-                  <span>Submit Your First Report</span>
-                </Button>
+                <Link href="/report">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="gap-2 cursor-pointer bg-[#006B3C] hover:bg-[#005731]"
+                  >
+                    <FilePlus className="w-4 h-4" />
+                    <span>Submit Your First Report</span>
+                  </Button>
+                </Link>
               </div>
             ) : (
               filteredComplaints.map((c) => {

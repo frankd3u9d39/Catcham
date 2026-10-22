@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
 import {
@@ -138,25 +138,21 @@ const CITIZEN_SECTIONS: Array<{ title: string; items: NavItem[] }> = [
       {
         label: 'Dashboard Overview',
         href: '/dashboard',
-        tabId: 'overview',
         icon: <Home className={ICON} />,
       },
       {
         label: 'My Complaints',
-        href: '/dashboard?tab=complaints',
-        tabId: 'complaints',
+        href: '/complaints',
         icon: <FileText className={ICON} />,
       },
       {
         label: 'Track Complaint',
-        href: '/dashboard?tab=track',
-        tabId: 'track',
+        href: '/track',
         icon: <FileSearch className={ICON} />,
       },
       {
         label: 'Submit New Report',
-        href: '/dashboard?tab=submit',
-        tabId: 'submit',
+        href: '/report',
         icon: <FilePlus className={ICON} />,
       },
     ],
@@ -166,14 +162,12 @@ const CITIZEN_SECTIONS: Array<{ title: string; items: NavItem[] }> = [
     items: [
       {
         label: 'Safety Bulletins',
-        href: '/dashboard?tab=alerts',
-        tabId: 'alerts',
+        href: '/alerts',
         icon: <Radio className={ICON} />,
       },
       {
         label: 'Whistleblower Vault',
-        href: '/dashboard?tab=privacy',
-        tabId: 'privacy',
+        href: '/privacy',
         icon: <Shield className={ICON} />,
       },
     ],
@@ -183,8 +177,7 @@ const CITIZEN_SECTIONS: Array<{ title: string; items: NavItem[] }> = [
     items: [
       {
         label: 'CREDICORP C.L.I.C.K.D',
-        href: '/dashboard?tab=credicorp',
-        tabId: 'credicorp',
+        href: '/credicorp',
         badge: 'FG PARTNER',
         icon: <Laptop className={ICON} />,
       },
@@ -195,8 +188,7 @@ const CITIZEN_SECTIONS: Array<{ title: string; items: NavItem[] }> = [
     items: [
       {
         label: 'Complainant Profile',
-        href: '/dashboard?tab=profile',
-        tabId: 'profile',
+        href: '/profile',
         icon: <User className={ICON} />,
       },
       {
@@ -257,13 +249,11 @@ function SidebarShell() {
 
 function SidebarNavContent() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { user, can, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isOfficer = isOfficerUser(user, can);
-  const currentTab = searchParams?.get('tab') || 'overview';
 
   const sections = isOfficer
     ? OFFICER_SECTIONS.map((section) => ({
@@ -273,11 +263,8 @@ function SidebarNavContent() {
     : CITIZEN_SECTIONS;
 
   const isItemActive = (item: NavItem) => {
-    if (item.tabId) {
-      return pathname === '/dashboard' && currentTab === item.tabId;
-    }
     if (item.href === '/dashboard') {
-      return pathname === '/dashboard' && (!searchParams?.get('tab') || currentTab === 'overview');
+      return pathname === '/dashboard';
     }
     return pathname === item.href || (item.href !== '/' && pathname.startsWith(`${item.href}/`));
   };
@@ -339,7 +326,7 @@ function SidebarNavContent() {
       {/* Security Status Ribbon for Citizens */}
       {!collapsed && !isOfficer && (
         <div className="px-3 pt-3 pb-1 shrink-0">
-          <div className="rounded-lg bg-emerald-950/40 border border-emerald-500/20 px-3 py-2 flex items-center gap-2">
+          {/* <div className="rounded-lg bg-emerald-950/40 border border-emerald-500/20 px-3 py-2 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             <div className="min-w-0">
               <p className="text-[11px] font-semibold text-emerald-300 truncate">
@@ -349,7 +336,7 @@ function SidebarNavContent() {
                 Anonymity Shield Active
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
       )}
 

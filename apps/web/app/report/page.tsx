@@ -13,6 +13,7 @@ import { useReportCategories } from '@/hooks/use-reports';
 import { useJurisdictions } from '@/hooks/use-platform';
 import { api } from '@/lib/api-client';
 import { firestoreService } from '@/lib/firebase';
+import { AppShell } from '@/components/layout/app-shell';
 import type { SubmissionReceipt } from '@/lib/types';
 
 const DRAFT_KEY_STORAGE = 'catcham.draftKey';
@@ -175,20 +176,8 @@ export default function SubmitReportPage() {
   const descriptionShort = form.description.trim().length < 30;
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="border-b border-neutral-200 bg-neutral-white">
-        <div className="max-w-2xl mx-auto px-5 sm:px-8 h-16 flex items-center">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-neutral-600 hover:text-neutral-950 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Link>
-        </div>
-      </header>
-
-      <main id="main-content" className="max-w-2xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+    <AppShell breadcrumbs={[{ label: 'Citizen Portal', href: '/dashboard' }, { label: 'Submit New Report' }]}>
+      <div className="max-w-2xl mx-auto py-2 sm:py-4 pb-12">
         <h1 className="text-xl sm:text-2xl font-bold text-neutral-950">Submit a report</h1>
         <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
           Describe what you saw as specifically as you can: what happened, where, when,
@@ -374,8 +363,8 @@ export default function SubmitReportPage() {
             Submit report
           </Button>
         </form>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
@@ -397,8 +386,8 @@ function Receipt({ receipt }: { receipt: SubmissionReceipt }) {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-5 py-12">
-      <main id="main-content" className="w-full max-w-lg">
+    <AppShell breadcrumbs={[{ label: 'Citizen Portal', href: '/dashboard' }, { label: 'Report Receipt' }]}>
+      <div className="w-full max-w-lg mx-auto py-8">
         <Card>
           <CardContent className="p-6 sm:p-8">
             <div className="w-11 h-11 rounded-full bg-brand-50 border border-brand-200 flex items-center justify-center">
@@ -461,7 +450,7 @@ function Receipt({ receipt }: { receipt: SubmissionReceipt }) {
             </div>
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
