@@ -153,16 +153,16 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-center md:justify-between gap-x-6">
           <div className="hidden md:flex items-center gap-1.5">
             <Clock className="w-3 h-3 text-emerald-400 shrink-0" />
-            <span>Defence Industries Corporation of Nigeria (DICON) · GITH Operations</span>
+            <span>Defence Industries Corporation of Nigeria (DICON) · CATCH-AM Operations</span>
           </div>
           <div className="flex items-center gap-4 text-slate-300 whitespace-nowrap">
             <a href="tel:+2347035922044" className="hover:text-emerald-400 flex items-center gap-1 transition-colors">
               <Phone className="w-2.5 h-2.5 text-emerald-400" />
               <span>+234 703 592 2044</span>
             </a>
-            <a href="mailto:dicongith@gmail.com" className="hover:text-emerald-400 flex items-center gap-1 transition-colors">
+            <a href="mailto:diconcatcham@gmail.com" className="hover:text-emerald-400 flex items-center gap-1 transition-colors">
               <Mail className="w-2.5 h-2.5 text-emerald-400" />
-              <span>dicongith@gmail.com</span>
+              <span>diconcatcham@gmail.com</span>
             </a>
           </div>
         </div>
@@ -361,8 +361,8 @@ export default function LandingPage() {
           <div className="lg:col-span-7 flex flex-col justify-center min-w-0">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-emerald-500/30 text-emerald-400 text-[11px] sm:text-xs font-semibold w-fit max-w-full mb-5 sm:mb-6">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span className="sm:hidden">DICON · GITH Mandate</span>
-              <span className="hidden sm:inline">Defence Industries Corporation of Nigeria (DICON) · GITH Mandate</span>
+              <span className="sm:hidden">DICON/CATCH-AM Mandate</span>
+              <span className="hidden sm:inline">Defence Industries Corporation of Nigeria (DICON/CATCH-AM) Mandate</span>
             </div>
 
             <h1 className="text-[2rem] leading-[1.15] sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-serif text-white sm:leading-[1.1]">
@@ -653,13 +653,13 @@ export default function LandingPage() {
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold tracking-wider mb-4">
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>GITH & FG CREDICORP STRATEGIC ALLIANCE</span>
+              <span>DICON/CATCH-AM & FG CREDICORP STRATEGIC ALLIANCE</span>
             </div>
             <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-serif text-white tracking-tight">
               C.L.I.C.K.D Device Credit Programme
             </h2>
             <p className="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
-              Discussions are actively progressing between <strong>GITH (DICON)</strong> and the <strong>Federal Government Consumer Credit Corporation (CREDICORP)</strong>. Active Catcham subscribers, tertiary students, and verified civic monitors can access laptops, smartphones, and field tablets on subsidized, flexible consumer credit.
+              Discussions are actively progressing between <strong>DICON/CATCH-AM</strong> and the <strong>Federal Government Consumer Credit Corporation (CREDICORP)</strong>. Active Catcham subscribers, tertiary students, and verified civic monitors can access laptops, smartphones, and field tablets on subsidized, flexible consumer credit.
             </p>
           </div>
 
@@ -699,7 +699,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-lg font-bold text-white">Priority Subscriber Clearance</h3>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                GITH platform subscribers benefit from an expedited credit underwriting track through CREDICORP&apos;s C.L.I.C.K.D pipeline, with flexible repayment terms spanning 6 to 18 months.
+                CATCH-AM platform subscribers benefit from an expedited credit underwriting track through CREDICORP&apos;s C.L.I.C.K.D pipeline, with flexible repayment terms spanning 6 to 18 months.
               </p>
               <div className="pt-2 text-xs font-mono text-emerald-400 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" />
@@ -753,7 +753,7 @@ export default function LandingPage() {
                   </span>
                   <span className="text-xs font-mono font-bold text-emerald-400">₦16,500/mo</span>
                 </div>
-                <h4 className="text-sm font-bold text-white">Pro-Book 15.6-inch GITH Workstation</h4>
+                <h4 className="text-sm font-bold text-white">Pro-Book 15.6-inch CATCH-AM Workstation</h4>
                 <p className="text-[11px] text-slate-400">Intel Core i5, 16GB RAM, 512GB SSD, Preloaded Ubuntu/Win11, CATCH-AM Portal</p>
               </div>
 
@@ -1004,7 +1004,7 @@ export default function LandingPage() {
               <span className="text-lg font-bold text-white font-serif">CATCH-AM</span>
             </Link>
             <p className="mt-4 text-[11px] leading-relaxed text-slate-400">
-              National Crime Intelligence, Public Safety and Compliance Platform under Defence Industries Corporation of Nigeria (DICON) / GITH.
+              National Crime Intelligence, Public Safety and Compliance Platform under Defence Industries Corporation of Nigeria (DICON/CATCH-AM).
             </p>
           </div>
 
@@ -1092,7 +1092,7 @@ export default function LandingPage() {
             <ul className="space-y-2.5">
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>DICON / GITH Operational Desk — Nigeria</span>
+                <span>DICON/CATCH-AM Operational Desk — Nigeria</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -1102,8 +1102,8 @@ export default function LandingPage() {
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
-                <a href="mailto:dicongith@gmail.com" className="text-white hover:text-emerald-400">
-                  dicongith@gmail.com
+                <a href="mailto:diconcatcham@gmail.com" className="text-white hover:text-emerald-400">
+                  diconcatcham@gmail.com
                 </a>
               </li>
               <li className="flex items-center gap-2 text-emerald-400 font-semibold">
@@ -1116,7 +1116,7 @@ export default function LandingPage() {
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-800/80 py-5 sm:py-6 px-4 sm:px-8 text-center text-slate-500 text-[11px] leading-relaxed">
-          <p>© 2026 CATCH-AM — Defence Industries Corporation of Nigeria (DICON) / GITH. All rights reserved.</p>
+          <p>© 2026 CATCH-AM — Defence Industries Corporation of Nigeria (DICON/CATCH-AM). All rights reserved.</p>
         </div>
       </footer>
     </div>

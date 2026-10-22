@@ -176,7 +176,7 @@ export const CREDICORP_DEVICES = [
   {
     id: 'dev-1',
     category: 'LAPTOP' as const,
-    name: 'Pro-Book 15.6" GITH Workstation',
+    name: 'Pro-Book 15.6" CATCH-AM Workstation',
     specs: 'Intel Core i5 (12th Gen), 16GB RAM, 512GB NVMe SSD, 15.6" Full HD Anti-Glare, 10hr Battery',
     preloaded: 'Encrypted Linux/Win11, CATCH-AM Portal, Forensic Data Tools, LibreOffice Suite',
     monthlyPrice: '₦16,500',
@@ -287,7 +287,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
               trackingCode: r.trackingCode || 'STORED',
               title: r.title,
               category: r.category,
-              assignedAgency: r.assignedAgency || 'Central Intake Desk (DICON / GITH)',
+              assignedAgency: r.assignedAgency || 'Central Intake Desk (DICON/CATCH-AM)',
               state: r.state || 'National Domain',
               status: r.status,
               priority: r.priority || 'MEDIUM',
@@ -317,7 +317,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
     category: 'STUDENT',
     institutionOrOrg: '',
     preferredDevice: 'LAPTOP',
-    deviceModelSelected: 'Pro-Book 15.6" GITH Workstation',
+    deviceModelSelected: 'Pro-Book 15.6" CATCH-AM Workstation',
     repaymentPlan: '12_MONTHS',
     state: '',
     lga: '',
@@ -438,7 +438,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
         trackingCode: fallbackCode,
         title: submitForm.title.trim(),
         category: catObj?.name || 'Public Safety Incident',
-        assignedAgency: 'Central Intake Desk (DICON / GITH)',
+        assignedAgency: 'Central Intake Desk (DICON/CATCH-AM)',
         state: submitForm.stateCode ? `${submitForm.stateCode} State` : 'National Domain',
         status: 'SUBMITTED',
         priority: 'MEDIUM',
@@ -640,7 +640,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
               Welcome, {user?.fullName ?? 'Citizen Reporter'}
             </h1>
             <p className="mt-2 text-sm text-neutral-300 leading-relaxed">
-              Track submitted incident reports, follow real-time inter-agency casework milestones, and lodge new encrypted disclosures under the sovereign mandate of DICON / GITH.
+              Track submitted incident reports, follow real-time inter-agency casework milestones, and lodge new encrypted disclosures under the sovereign mandate of DICON/CATCH-AM.
             </p>
           </div>
 
@@ -1008,7 +1008,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                 <div>
                   <div className="flex flex-wrap items-center gap-2 text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider mb-2">
                     <span className="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">
-                      FG CREDICORP × GITH STRATEGIC INITIATIVE
+                      FG CREDICORP × DICON/CATCH-AM STRATEGIC INITIATIVE
                     </span>
                     <span className="text-neutral-400">•</span>
                     <span>C.L.I.C.K.D DIGITAL EMPOWERMENT</span>
@@ -1018,7 +1018,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                     <span>FG CREDICORP C.L.I.C.K.D Device Credit Access</span>
                   </CardTitle>
                   <p className="text-xs sm:text-sm text-neutral-300 mt-2 max-w-3xl leading-relaxed">
-                    Credit for Laptops, Internet, Computers, Knowledge & Devices (C.L.I.C.K.D). A strategic Federal Government partnership empowering students, entrepreneurs, and GITH subscribers with flexible consumer credit to access laptops, smartphones, and tablets for education, digital economy, and civic vigilance.
+                    Credit for Laptops, Internet, Computers, Knowledge & Devices (C.L.I.C.K.D). A strategic Federal Government partnership empowering students, entrepreneurs, and CATCH-AM subscribers with flexible consumer credit to access laptops, smartphones, and tablets for education, digital economy, and civic vigilance.
                   </p>
                 </div>
 
@@ -1042,7 +1042,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                 <div className="p-3 rounded-lg bg-neutral-900/80 border border-neutral-800">
                   <p className="text-[10px] font-mono text-emerald-400 uppercase font-bold">Initial Deposit</p>
                   <p className="text-sm font-bold text-white mt-0.5">0% Downpayment</p>
-                  <p className="text-[10px] text-neutral-400">For verified GITH subscribers</p>
+                  <p className="text-[10px] text-neutral-400">For verified CATCH-AM subscribers</p>
                 </div>
                 <div className="p-3 rounded-lg bg-neutral-900/80 border border-neutral-800">
                   <p className="text-[10px] font-mono text-emerald-400 uppercase font-bold">Intake Track</p>
@@ -1073,7 +1073,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                         CREDICORP C.L.I.C.K.D Application Queued
                       </h3>
                       <p className="text-xs text-neutral-600 mt-0.5">
-                        Your device credit application has been logged to the centralized FG CREDICORP intake desk with GITH priority subscriber routing.
+                        Your device credit application has been logged to the centralized FG CREDICORP intake desk with CATCH-AM priority subscriber routing.
                       </p>
                     </div>
                   </div>
@@ -1269,7 +1269,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                         </div>
                       </div>
                       <span className="text-xs font-mono font-bold text-emerald-800 bg-white px-3 py-1 rounded border border-emerald-200 shrink-0">
-                        GITH Subscriber Verified
+                        CATCH-AM Subscriber Verified
                       </span>
                     </div>
 
@@ -1300,9 +1300,9 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                           }
                         >
                           <option value="STUDENT">Student (Tertiary Institution / University / Poly)</option>
-                          <option value="CIVIC_REPORTER">GITH Civic Whistleblower / Community Monitor</option>
+                          <option value="CIVIC_REPORTER">CATCH-AM Civic Whistleblower / Community Monitor</option>
                           <option value="ENTREPRENEUR">Digital Entrepreneur / MSME Owner</option>
-                          <option value="SUBSCRIBER">GITH Platform Subscriber / Public Officer</option>
+                          <option value="SUBSCRIBER">CATCH-AM Platform Subscriber / Public Officer</option>
                         </Select>
                       </div>
 
@@ -1406,10 +1406,10 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                     <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-2">
                       <div className="flex items-center gap-2 text-neutral-900 font-bold text-xs">
                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                        <span>GITH Subscriber Guarantee & Fast-Track Terms</span>
+                        <span>CATCH-AM Subscriber Guarantee & Fast-Track Terms</span>
                       </div>
                       <p className="text-xs text-neutral-600 leading-relaxed">
-                        By applying through the CATCH-AM portal under the GITH-CREDICORP strategic alliance, your institutional subscription serves as secondary credit endorsement. Pre-approved applicants undergo remote NIN biometric verification before equipment collection.
+                        By applying through the CATCH-AM portal under the DICON/CATCH-AM & CREDICORP strategic alliance, your institutional subscription serves as secondary credit endorsement. Pre-approved applicants undergo remote NIN biometric verification before equipment collection.
                       </p>
                     </div>
 
@@ -1495,14 +1495,14 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                   <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/60 space-y-1.5">
                     <h5 className="font-bold text-neutral-900 text-sm">Who is eligible for the C.L.I.C.K.D programme?</h5>
                     <p className="text-neutral-600 leading-relaxed">
-                      All verified Nigerian tertiary students, NYSC corps members, digital entrepreneurs, and registered GITH subscribers with a valid National Identity Number (NIN).
+                      All verified Nigerian tertiary students, NYSC corps members, digital entrepreneurs, and registered CATCH-AM subscribers with a valid National Identity Number (NIN).
                     </p>
                   </div>
 
                   <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/60 space-y-1.5">
-                    <h5 className="font-bold text-neutral-900 text-sm">How does being a GITH subscriber help?</h5>
+                    <h5 className="font-bold text-neutral-900 text-sm">How does being a CATCH-AM subscriber help?</h5>
                     <p className="text-neutral-600 leading-relaxed">
-                      GITH subscribers receive pre-screened clearance, priority queue allocation, and eligibility for zero downpayment terms due to platform verification and public reporting participation.
+                      CATCH-AM subscribers receive pre-screened clearance, priority queue allocation, and eligibility for zero downpayment terms due to platform verification and public reporting participation.
                     </p>
                   </div>
 
@@ -1516,7 +1516,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                   <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/60 space-y-1.5">
                     <h5 className="font-bold text-neutral-900 text-sm">Where do I collect my device?</h5>
                     <p className="text-neutral-600 leading-relaxed">
-                      Upon approval, devices are collected from accredited state university distribution centers or regional DICON / GITH partner logistical collection hubs across all 36 states and FCT.
+                      Upon approval, devices are collected from accredited state university distribution centers or regional DICON/CATCH-AM partner logistical collection hubs across all 36 states and FCT.
                     </p>
                   </div>
                 </div>
@@ -1526,25 +1526,25 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
         </div>
       )}
 
-      {/* 2.5. GITH × FG CREDICORP C.L.I.C.K.D PARTNERSHIP SPOTLIGHT */}
+      {/* 2.5. DICON/CATCH-AM × FG CREDICORP C.L.I.C.K.D PARTNERSHIP SPOTLIGHT */}
       {activeTab !== 'credicorp' && activeTab !== 'submit' && (
         <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-neutral-950 via-[#071912] to-neutral-900 p-6 sm:p-7 text-white shadow-xl relative overflow-hidden">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                <span>GITH & FG CREDICORP STRATEGIC PARTNERSHIP</span>
+                <span>DICON/CATCH-AM & FG CREDICORP STRATEGIC PARTNERSHIP</span>
               </div>
               <h3 className="text-xl sm:text-2xl font-bold font-serif text-white tracking-tight">
                 FG CREDICORP C.L.I.C.K.D: Subsidized Device Access for Subscribers
               </h3>
               <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-                Discussions are in progress between GITH (DICON) and FG CREDICORP to empower our subscribers, students, and civic whistleblowers with laptops, smartphones, and field tablets on flexible zero/low-interest consumer credit.
+                Discussions are actively progressing between DICON/CATCH-AM and FG CREDICORP to empower our subscribers, students, and civic whistleblowers with laptops, smartphones, and field tablets on flexible zero/low-interest consumer credit.
               </p>
               <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-emerald-200">
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Priority Intake for GITH Subscribers</span>
+                  <span>Priority Intake for CATCH-AM Subscribers</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -1971,7 +1971,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
             </h4>
           </div>
           <p className="text-xs text-emerald-100/90 leading-relaxed">
-            Your submissions benefit from strict non-disclosure protections under the Defence Industries Corporation of Nigeria (DICON) / GITH mandate. Metadata is cryptographically stripped and custody records are hash-chained.
+            Your submissions benefit from strict non-disclosure protections under the Defence Industries Corporation of Nigeria (DICON/CATCH-AM) mandate. Metadata is cryptographically stripped and custody records are hash-chained.
           </p>
           <div className="pt-2 flex items-center gap-3 text-xs text-emerald-300 font-mono">
             <span className="inline-flex items-center gap-1">

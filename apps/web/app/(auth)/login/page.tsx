@@ -162,7 +162,7 @@ function LoginForm() {
             <div>
               <p className="font-semibold text-white">Cryptographic Whistleblower Protection</p>
               <p className="text-xs text-neutral-400 mt-0.5">
-                Evidence custody records are hash-chained and submitter identities are protected under sovereign DICON / GITH authority.
+                Evidence custody records are hash-chained and submitter identities are protected under sovereign DICON/CATCH-AM authority.
               </p>
             </div>
           </li>

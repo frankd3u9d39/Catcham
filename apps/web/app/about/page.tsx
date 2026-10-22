@@ -200,16 +200,16 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-center md:justify-between gap-x-6">
           <div className="hidden md:flex items-center gap-1.5">
             <Clock className="w-3 h-3 text-emerald-400 shrink-0" />
-            <span>Operational Network: DICON / GITH — Federal Republic of Nigeria</span>
+            <span>Operational Network: DICON/CATCH-AM — Federal Republic of Nigeria</span>
           </div>
           <div className="flex items-center gap-4 text-slate-300 whitespace-nowrap">
             <a href="tel:+2347035922044" className="hover:text-emerald-400 flex items-center gap-1 transition-colors">
               <Phone className="w-2.5 h-2.5 text-emerald-400" />
               <span>+234 703 592 2044</span>
             </a>
-            <a href="mailto:dicongith@gmail.com" className="hover:text-emerald-400 flex items-center gap-1 transition-colors">
+            <a href="mailto:diconcatcham@gmail.com" className="hover:text-emerald-400 flex items-center gap-1 transition-colors">
               <Mail className="w-2.5 h-2.5 text-emerald-400" />
-              <span>dicongith@gmail.com</span>
+              <span>diconcatcham@gmail.com</span>
             </a>
           </div>
         </div>
@@ -822,7 +822,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 12. DIRECT CONTACT CARD (GITH / DICON) */}
+      {/* 12. DIRECT CONTACT CARD (DICON/CATCH-AM) */}
       <section id="contact" className="scroll-mt-20 py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-8">
         <div className="bg-white rounded-2xl p-6 sm:p-10 border border-slate-200/90 shadow-md">
           <div className="grid md:grid-cols-12 gap-8 items-center">
@@ -831,7 +831,7 @@ export default function AboutPage() {
                 OPERATIONAL CONTACT & INSTITUTIONAL LIAISON
               </span>
               <h3 className="text-2xl font-bold font-serif text-slate-950 mt-3">
-                DICON / GITH Operational Desk
+                DICON/CATCH-AM Operational Desk
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
                 For agency onboarding, multi-agency data integration agreements, operational inquiries,
@@ -846,7 +846,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider block">Division</span>
-                  <span className="text-xs font-bold text-slate-950">GITH — DICON Institutional Operations</span>
+                  <span className="text-xs font-bold text-slate-950">DICON/CATCH-AM Institutional Operations</span>
                 </div>
               </div>
 
@@ -856,8 +856,8 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider block">Email Liaison</span>
-                  <a href="mailto:dicongith@gmail.com" className="text-xs font-bold text-[#006B3C] hover:underline">
-                    dicongith@gmail.com
+                  <a href="mailto:diconcatcham@gmail.com" className="text-xs font-bold text-[#006B3C] hover:underline">
+                    diconcatcham@gmail.com
                   </a>
                 </div>
               </div>
@@ -889,7 +889,7 @@ export default function AboutPage() {
               <span className="text-lg font-bold text-white font-serif">CATCH-AM</span>
             </Link>
             <p className="mt-4 text-[11px] leading-relaxed text-slate-400">
-              National Crime Intelligence, Public Safety and Compliance Platform under DICON / GITH.
+              National Crime Intelligence, Public Safety and Compliance Platform under DICON/CATCH-AM.
             </p>
           </div>
 
@@ -938,14 +938,14 @@ export default function AboutPage() {
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
-                <a href="mailto:dicongith@gmail.com" className="text-white hover:text-emerald-400">dicongith@gmail.com</a>
+                <a href="mailto:diconcatcham@gmail.com" className="text-white hover:text-emerald-400">diconcatcham@gmail.com</a>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-slate-800/80 py-5 sm:py-6 px-4 sm:px-8 text-center text-slate-500 text-[11px] leading-relaxed">
-          <p>© 2026 CATCH-AM — Defence Industries Corporation of Nigeria (DICON) / GITH. All rights reserved.</p>
+          <p>© 2026 CATCH-AM — Defence Industries Corporation of Nigeria (DICON/CATCH-AM). All rights reserved.</p>
         </div>
       </footer>
     </div>
