@@ -48,6 +48,11 @@ import { Select } from '@/components/ui/select';
 import { InlineError } from '@/components/ui/error-state';
 import { useReportCategories } from '@/hooks/use-reports';
 import { useJurisdictions } from '@/hooks/use-platform';
+import {
+  DEFAULT_REPORT_CATEGORIES,
+  DEFAULT_STATES,
+  getDefaultJurisdictions,
+} from '@/lib/reference-data';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api-client';
 import { firestoreService, type CredicorpApplication } from '@/lib/firebase';
@@ -176,7 +181,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'RESOLVED'>('ALL');
 
   // Submit Report Form State inside Dashboard
-  const { data: categories = [] } = useReportCategories();
+  const { data: rawCategories = [] } = useReportCategories();
   const [submitForm, setSubmitForm] = useState({
     categoryId: '',
     title: '',
@@ -188,8 +193,15 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
     isAnonymous: false,
     contactEmail: user?.email ?? '',
   });
-  const { data: states = [] } = useJurisdictions('STATE');
-  const { data: lgas = [] } = useJurisdictions('LGA', submitForm.stateCode || undefined);
+  const { data: rawStates = [] } = useJurisdictions('STATE');
+  const { data: rawLgas = [] } = useJurisdictions('LGA', submitForm.stateCode || undefined);
+
+  const categories = rawCategories.length > 0 ? rawCategories : DEFAULT_REPORT_CATEGORIES;
+  const states = rawStates.length > 0 ? rawStates : DEFAULT_STATES;
+  const lgas =
+    rawLgas.length > 0
+      ? rawLgas
+      : getDefaultJurisdictions('LGA', submitForm.stateCode || undefined);
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
   // Sync real reports from Cloud Firestore & local session on mount
@@ -808,7 +820,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                   >
                     <option value="">Select a category</option>
                     {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
+                      <option key={cat.id || cat.code} value={cat.id || cat.code}>
                         {cat.name}
                       </option>
                     ))}
@@ -1637,7 +1649,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                   For ongoing emergencies or imminent threats to public safety, reach the inter-agency dispatch desks directly:
                 </p>
                 <div className="rounded-lg bg-white p-3 border border-emerald-200 text-xs space-y-1 font-mono">
-                  <p><strong className="text-neutral-900">National Emergency:</strong> 112 / 0800-CATCHAM</p>
+                  <p><strong className="text-neutral-900">National Emergency:</strong>0703 592 2044</p>
                   <p><strong className="text-neutral-900">Official Email:</strong> diconcatcham@gmail.com</p>
                 </div>
               </div>

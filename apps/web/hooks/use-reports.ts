@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
+import { DEFAULT_REPORT_CATEGORIES } from '@/lib/reference-data';
 import type {
   Page,
   Priority,
@@ -41,9 +42,20 @@ export function useReport(id: string | undefined) {
 export function useReportCategories() {
   return useQuery({
     queryKey: ['report-categories'],
-    queryFn: () => api.public<ReportCategory[]>('/public/reports/categories'),
+    queryFn: async () => {
+      try {
+        const remote = await api.public<ReportCategory[]>('/public/reports/categories');
+        if (Array.isArray(remote) && remote.length > 0) {
+          return remote;
+        }
+      } catch {
+        // Fallback to embedded reference categories if remote endpoint is offline/unreachable
+      }
+      return DEFAULT_REPORT_CATEGORIES;
+    },
     // Reference data; it only changes when an administrator edits it.
     staleTime: 60 * 60 * 1000,
+    initialData: DEFAULT_REPORT_CATEGORIES,
   });
 }
 

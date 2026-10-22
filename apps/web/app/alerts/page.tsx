@@ -137,7 +137,7 @@ export default function SafetyBulletinsPage() {
                     For ongoing emergencies or imminent threats to public safety, reach the inter-agency dispatch desks directly:
                   </p>
                   <div className="rounded-lg bg-white p-3 border border-emerald-200 text-xs space-y-1 font-mono">
-                    <p><strong className="text-neutral-900">National Emergency:</strong> 112 / 0800-CATCHAM</p>
+                    <p><strong className="text-neutral-900">National Emergency:</strong>0703 592 2044</p>
                     <p><strong className="text-neutral-900">Official Email:</strong> diconcatcham@gmail.com</p>
                   </div>
                 </div>

@@ -23,13 +23,15 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { useAuth } from '@/providers/auth-provider';
 import { useJurisdictions } from '@/hooks/use-platform';
+import { DEFAULT_STATES } from '@/lib/reference-data';
 import { firestoreService, type CredicorpApplication } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
 import { CREDICORP_DEVICES } from '@/components/portal/citizen-dashboard-view';
 
 export default function CredicorpPage() {
   const { user } = useAuth();
-  const { data: states = [] } = useJurisdictions('STATE');
+  const { data: rawStates = [] } = useJurisdictions('STATE');
+  const states = rawStates.length > 0 ? rawStates : DEFAULT_STATES;
 
   const [credicorpForm, setCredicorpForm] = useState({
     applicantName: user?.fullName || '',

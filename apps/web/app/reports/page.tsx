@@ -15,6 +15,7 @@ import { ErrorState } from '@/components/ui/error-state';
 import { Pagination } from '@/components/ui/pagination';
 import { useReportCategories, useReports } from '@/hooks/use-reports';
 import { useJurisdictions } from '@/hooks/use-platform';
+import { DEFAULT_REPORT_CATEGORIES, DEFAULT_STATES } from '@/lib/reference-data';
 import { formatRelative, humanise, priorityBadge, statusBadge } from '@/lib/format';
 import { REPORT_STATUS_OPTIONS, PRIORITY_OPTIONS } from '@/lib/options';
 
@@ -48,8 +49,10 @@ function ReportQueue() {
   });
   const [searchDraft, setSearchDraft] = useState(filters.search);
 
-  const { data: categories = [] } = useReportCategories();
-  const { data: states = [] } = useJurisdictions('STATE');
+  const { data: rawCategories = [] } = useReportCategories();
+  const { data: rawStates = [] } = useJurisdictions('STATE');
+  const categories = rawCategories.length > 0 ? rawCategories : DEFAULT_REPORT_CATEGORIES;
+  const states = rawStates.length > 0 ? rawStates : DEFAULT_STATES;
 
   const query = useReports({
     page: filters.page,

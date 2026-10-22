@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
+import { getDefaultJurisdictions } from '@/lib/reference-data';
 import type {
   AgencyNode,
   AgencyWorkload,
@@ -115,8 +116,19 @@ export function useAgencies() {
 export function useJurisdictions(level?: 'FEDERAL' | 'STATE' | 'LGA', parentCode?: string) {
   return useQuery({
     queryKey: ['jurisdictions', level, parentCode],
-    queryFn: () => api.public<Jurisdiction[]>(buildJurisdictionPath(level, parentCode)),
+    queryFn: async () => {
+      try {
+        const remote = await api.public<Jurisdiction[]>(buildJurisdictionPath(level, parentCode));
+        if (Array.isArray(remote) && remote.length > 0) {
+          return remote;
+        }
+      } catch {
+        // Fallback to authoritative reference states and LGAs if remote endpoint is offline
+      }
+      return getDefaultJurisdictions(level, parentCode);
+    },
     staleTime: REFERENCE_STALE_TIME,
+    initialData: () => getDefaultJurisdictions(level, parentCode),
   });
 }
 
