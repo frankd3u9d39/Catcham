@@ -112,7 +112,7 @@ function LoginForm() {
             </Button>
           </form>
 
-          <div className="mt-4 p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between gap-2">
+          {/* <div className="mt-4 p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between gap-2">
             <div>
               <p className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
                 <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -140,7 +140,7 @@ function LoginForm() {
             >
               1-Click Sign In
             </Button>
-          </div>
+          </div> */}
 
           <div className="mt-4 text-center text-xs text-neutral-600">
             <span>New user? </span>
