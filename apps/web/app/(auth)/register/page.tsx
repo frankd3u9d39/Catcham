@@ -96,7 +96,7 @@ function RegisterForm() {
           </p>
 
           {/* 1-Click Demo Shortcut */}
-          <div className="mt-4 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+          {/* <div className="mt-4 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
@@ -118,7 +118,7 @@ function RegisterForm() {
                 1-Click Sign In
               </Button>
             </div>
-          </div>
+          </div> */}
 
           {/* Registration Form */}
           <form onSubmit={onSubmit} className="mt-5 space-y-4" noValidate>
