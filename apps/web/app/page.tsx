@@ -954,44 +954,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 9. OFFICIAL PUBLIC SAFETY ADVISORY BANNER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-16">
-        <div className="bg-[#0B131E] rounded-2xl p-6 sm:p-10 border border-slate-800 shadow-xl flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 sm:gap-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-              <Mail className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">Official Public Safety & Security Advisories</h3>
-              <p className="text-xs text-slate-300 mt-1 max-w-md">
-                Subscribe to receive verified threat bulletins, compliance directives, and operational public safety updates.
-              </p>
-            </div>
-          </div>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert('Thank you for subscribing to CATCH-AM public safety advisories.');
-            }}
-            className="flex flex-col sm:flex-row w-full lg:w-auto sm:items-center gap-2.5 sm:gap-2 lg:max-w-md"
-          >
-            <input
-              type="email"
-              placeholder="Official email address"
-              required
-              className="w-full sm:flex-1 min-w-0 bg-white text-slate-900 placeholder:text-slate-400 text-base sm:text-xs px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#006B3C]"
-            />
-            <button
-              type="submit"
-              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-[#006B3C] hover:bg-[#005731] text-white font-bold text-xs uppercase tracking-wider transition-colors shrink-0"
-            >
-              Subscribe
-            </button>
-          </form>
-        </div>
-      </section>
-
       {/* 10. EXTENSIVE CORPORATE & INSTITUTIONAL FOOTER */}
       <footer id="contact" className="bg-[#060B12] text-slate-400 text-xs border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-16 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-x-6 gap-y-10 sm:gap-10">
