@@ -21,6 +21,7 @@ import {
   DEFAULT_STATES,
   getDefaultJurisdictions,
 } from '@/lib/reference-data';
+import { addNotification } from '@/lib/notifications';
 
 const DRAFT_KEY_STORAGE = 'catcham.draftKey';
 
@@ -203,6 +204,14 @@ export default function SubmitReportPage() {
             at: new Date().toISOString(),
           },
         ],
+      });
+
+      addNotification({
+        id: `notif-report-${result.referenceNumber}`,
+        channel: 'MONITOR',
+        subject: `Incident Report ${result.referenceNumber} Logged`,
+        body: `Your incident disclosure "${form.title}" has been sealed and registered. Tracking token: ${result.trackingCode}. Keep this token confidential.`,
+        readAt: null,
       });
 
       if (draftKey) {

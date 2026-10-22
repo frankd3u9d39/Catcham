@@ -24,6 +24,7 @@ import { Select } from '@/components/ui/select';
 import { useAuth } from '@/providers/auth-provider';
 import { useJurisdictions } from '@/hooks/use-platform';
 import { DEFAULT_STATES } from '@/lib/reference-data';
+import { addNotification } from '@/lib/notifications';
 import { firestoreService, type CredicorpApplication } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
 import { CREDICORP_DEVICES } from '@/components/portal/citizen-dashboard-view';
@@ -97,6 +98,15 @@ export default function CredicorpPage() {
     try {
       await firestoreService.saveCredicorpApplication(newApp);
       setSavedApplications((prev) => [newApp, ...prev]);
+
+      addNotification({
+        id: `notif-credicorp-${ref}`,
+        channel: 'PORTAL',
+        subject: `CREDICORP Hardware Allocation Queued (${ref})`,
+        body: `Your application for "${newApp.deviceModelSelected}" under repayment tenure ${newApp.repaymentPlan.replace('_', ' ')} has been recorded and submitted for remote NIN verification.`,
+        readAt: null,
+      });
+
       setReceipt({
         applicationRef: ref,
         applicantName: newApp.applicantName,

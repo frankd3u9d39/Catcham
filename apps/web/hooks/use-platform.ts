@@ -3,6 +3,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { getDefaultJurisdictions } from '@/lib/reference-data';
+import {
+  getStoredNotifications,
+  getUnreadNotificationCount,
+  markAllNotificationsAsRead,
+  type NotificationRecord,
+} from '@/lib/notifications';
 import type {
   AgencyNode,
   AgencyWorkload,
@@ -266,17 +272,34 @@ export function useWorkflows() {
 export function useNotifications(unreadOnly = false) {
   return useQuery({
     queryKey: ['notifications', unreadOnly],
-    queryFn: () =>
-      api.get<
-        Page<{
-          id: string;
-          channel: string;
-          subject: string;
-          body: string;
-          readAt: string | null;
-          createdAt: string;
-        }>
-      >('/notifications', { unreadOnly }),
+    queryFn: async () => {
+      try {
+        const remote = await api.get<Page<NotificationRecord>>('/notifications', { unreadOnly });
+        if (remote && Array.isArray(remote.items) && remote.items.length > 0) {
+          return remote;
+        }
+      } catch {
+        // Fallback to local and stored notifications if backend is unreachable
+      }
+      const localItems = getStoredNotifications(unreadOnly);
+      return {
+        items: localItems,
+        total: localItems.length,
+        page: 1,
+        pageSize: 50,
+        pageCount: 1,
+      };
+    },
+    initialData: () => {
+      const localItems = getStoredNotifications(unreadOnly);
+      return {
+        items: localItems,
+        total: localItems.length,
+        page: 1,
+        pageSize: 50,
+        pageCount: 1,
+      };
+    },
     refetchInterval: 60_000,
   });
 }
@@ -284,7 +307,18 @@ export function useNotifications(unreadOnly = false) {
 export function useUnreadCount() {
   return useQuery({
     queryKey: ['notifications', 'unread-count'],
-    queryFn: () => api.get<{ count: number }>('/notifications/unread-count'),
+    queryFn: async () => {
+      try {
+        const remote = await api.get<{ count: number }>('/notifications/unread-count');
+        if (remote && typeof remote.count === 'number') {
+          return remote;
+        }
+      } catch {
+        // Fallback to local unread count
+      }
+      return { count: getUnreadNotificationCount() };
+    },
+    initialData: () => ({ count: getUnreadNotificationCount() }),
     refetchInterval: 60_000,
   });
 }
@@ -293,8 +327,16 @@ export function useMarkAllRead() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => api.post<{ updated: number }>('/notifications/read-all'),
+    mutationFn: async () => {
+      try {
+        return await api.post<{ updated: number }>('/notifications/read-all');
+      } catch {
+        markAllNotificationsAsRead();
+        return { updated: 1 };
+      }
+    },
     onSuccess: () => {
+      markAllNotificationsAsRead();
       void queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
