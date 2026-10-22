@@ -657,32 +657,32 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
             <Link href="/report" className="w-full sm:w-auto">
               <Button
                 variant="primary"
-                className="w-full sm:w-auto gap-2 shadow-lg shadow-emerald-950/50 cursor-pointer justify-center"
+                className="w-full sm:w-auto gap-2 bg-[#006B3C] hover:bg-[#005731] text-white shadow-lg shadow-emerald-950/50 cursor-pointer justify-center font-medium"
               >
                 <FilePlus className="w-4 h-4" />
                 <span>Submit New Report</span>
               </Button>
             </Link>
             <Link href="/track" className="w-full sm:w-auto">
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto gap-2 border-neutral-700 text-neutral-200 hover:bg-neutral-800 cursor-pointer justify-center"
+              <button
+                type="button"
+                className="w-full sm:w-auto inline-flex items-center justify-center font-semibold rounded-lg transition-colors select-none h-10 px-4 text-sm gap-2 border border-neutral-700 bg-neutral-800 text-white hover:bg-neutral-700 active:bg-neutral-900 cursor-pointer shadow-sm"
               >
-                <FileSearch className="w-4 h-4" />
+                <FileSearch className="w-4 h-4 text-neutral-300" />
                 <span>Track Complaint</span>
-              </Button>
+              </button>
             </Link>
             <Link href="/credicorp" className="w-full sm:w-auto">
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto gap-2 border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/40 cursor-pointer transition-all justify-center"
+              <button
+                type="button"
+                className="w-full sm:w-auto inline-flex items-center justify-center font-semibold rounded-lg transition-colors select-none h-10 px-4 text-sm gap-2 border border-emerald-500/40 bg-emerald-950/80 text-emerald-300 hover:bg-emerald-900 cursor-pointer shadow-sm"
               >
                 <Laptop className="w-4 h-4 text-emerald-400" />
                 <span>CREDICORP Device Credit</span>
                 <span className="text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded">
                   NEW
                 </span>
-              </Button>
+              </button>
             </Link>
           </div>
         </div>

@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   },
   description:
     'Multi-agency incident reporting, investigation and evidence management for Nigeria.',
+  icons: {
+    icon: [
+      { url: '/logo.png', type: 'image/png' },
+      { url: '/favicon.ico' },
+    ],
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
