@@ -38,7 +38,7 @@ const ICON = 'w-5 h-5 shrink-0';
 export const CitizenSidebar: React.FC<CitizenSidebarProps> = ({
   activeTab = 'overview',
   onTabChange,
-  complaintCount = 3,
+  complaintCount = 0,
   onToggleOfficerMode,
   isOfficer = false,
 }) => {

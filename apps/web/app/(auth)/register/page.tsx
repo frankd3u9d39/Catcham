@@ -4,7 +4,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle2, Lock, Shield, ShieldCheck, UserCheck } from 'lucide-react';
+import { CheckCircle2, Lock, Shield, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InlineError } from '@/components/ui/error-state';
@@ -61,19 +61,6 @@ function RegisterForm() {
     }
   }
 
-  // Quick 1-click test with pre-seeded citizen account
-  async function useQuickCitizenAccount() {
-    setIsSubmitting(true);
-    try {
-      await login('citizen@catcham.local', 'ChangeMe123!');
-      router.replace(next);
-    } catch (caught) {
-      setError(caught);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
   return (
     <main id="main-content" className="min-h-screen grid lg:grid-cols-2 bg-neutral-50">
       {/* Left Column: Registration Form */}
@@ -94,31 +81,6 @@ function RegisterForm() {
           <p className="mt-1.5 text-xs text-neutral-600 leading-relaxed">
             Register to submit encrypted incident reports, track investigative progress in real-time, and protect national public safety.
           </p>
-
-          {/* 1-Click Demo Shortcut */}
-          {/* <div className="mt-4 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <p className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
-                  <UserCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Instant Demo Citizen Account</span>
-                </p>
-                <p className="text-[11px] text-emerald-700 mt-0.5">
-                  Pre-configured with sample complaints and tracking tokens.
-                </p>
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                variant="primary"
-                onClick={useQuickCitizenAccount}
-                isLoading={isSubmitting}
-                className="text-xs font-bold shrink-0 bg-emerald-700 hover:bg-emerald-800"
-              >
-                1-Click Sign In
-              </Button>
-            </div>
-          </div> */}
 
           {/* Registration Form */}
           <form onSubmit={onSubmit} className="mt-5 space-y-4" noValidate>

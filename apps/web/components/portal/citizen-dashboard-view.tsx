@@ -22,6 +22,7 @@ import {
   FileText,
   GraduationCap,
   HelpCircle,
+  Inbox,
   KeyRound,
   Laptop,
   Lock,
@@ -57,109 +58,28 @@ interface CitizenDashboardViewProps {
   user: AuthenticatedUser | null;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
+  onComplaintCountChange?: (count: number) => void;
 }
 
-// Pre-seeded complaint data linked to the citizen's account for immediate verification
-const INITIAL_COMPLAINTS = [
-  {
-    id: 'comp-1',
-    referenceNumber: 'CTM-2026-B7ABA1',
-    trackingCode: 'TK-9921-X4',
-    title: 'Suspected crude oil diversion at an Eleme manifold',
-    category: 'Petroleum and pipeline offences',
-    assignedAgency: 'EFCC (Special Oil & Gas Taskforce)',
-    state: 'Rivers State (Eleme)',
-    status: 'UNDER_INVESTIGATION',
-    priority: 'CRITICAL',
-    submittedAt: '2026-09-22T17:35:03.275Z',
-    updatedAt: '2026-10-18T11:20:00.000Z',
-    currentStage: 5, // 1 to 8
-    timeline: [
-      {
-        action: 'SUBMITTED',
-        description: 'Citizen complaint securely ingested via encrypted whistleblowing channel.',
-        at: '2026-09-22T17:35:03.275Z',
-      },
-      {
-        action: 'TRIAGED',
-        description: 'Triage officer prioritized as CRITICAL due to active pipeline tapping risks.',
-        at: '2026-09-23T08:15:20.000Z',
-      },
-      {
-        action: 'ROUTED',
-        description: 'Formally transferred to EFCC Anti-Bunkering & Assets Recovery Unit.',
-        at: '2026-09-23T14:30:00.000Z',
-      },
-      {
-        action: 'INVESTIGATION_OPENED',
-        description: 'Case file opened. Assigned to Lead Field Investigator with active GPS surveillance.',
-        at: '2026-09-24T10:00:00.000Z',
-      },
-    ],
-  },
-  {
-    id: 'comp-2',
-    referenceNumber: 'CTM-2026-700CF0',
-    trackingCode: 'TK-4812-B9',
-    title: 'Procurement irregularities in a river basin authority contract',
-    category: 'Public sector corruption',
-    assignedAgency: 'EFCC (Special Anti-Corruption Directorate)',
-    state: 'FCT Abuja (AMAC)',
-    status: 'UNDER_INVESTIGATION',
-    priority: 'HIGH',
-    submittedAt: '2026-09-25T17:35:03.509Z',
-    updatedAt: '2026-10-15T16:45:00.000Z',
-    currentStage: 5,
-    timeline: [
-      {
-        action: 'SUBMITTED',
-        description: 'Confidential corporate bidding disclosure filed with contract evidence hash.',
-        at: '2026-09-25T17:35:03.509Z',
-      },
-      {
-        action: 'TRIAGED',
-        description: 'Cross-referenced against corporate registry and flagged for evaluation.',
-        at: '2026-09-26T09:10:00.000Z',
-      },
-      {
-        action: 'ROUTED',
-        description: 'Routed to EFCC Public Sector Integrity Directorate.',
-        at: '2026-09-27T11:40:00.000Z',
-      },
-    ],
-  },
-  {
-    id: 'comp-3',
-    referenceNumber: 'CTM-2026-3ECE67',
-    trackingCode: 'TK-1038-Z2',
-    title: 'Unreported spill in a creek near Bonny',
-    category: 'Environmental harm',
-    assignedAgency: 'NOSDRA (Spill Response Team)',
-    state: 'Rivers State (Bonny)',
-    status: 'UNDER_INVESTIGATION',
-    priority: 'HIGH',
-    submittedAt: '2026-09-30T17:35:03.794Z',
-    updatedAt: '2026-10-12T09:30:00.000Z',
-    currentStage: 4,
-    timeline: [
-      {
-        action: 'SUBMITTED',
-        description: 'Environmental contamination report lodged with geo-tagged images.',
-        at: '2026-09-30T17:35:03.794Z',
-      },
-      {
-        action: 'TRIAGED',
-        description: 'Verified coordinates match coastal mangrove corridor.',
-        at: '2026-10-01T08:00:00.000Z',
-      },
-      {
-        action: 'ROUTED',
-        description: 'Transferred to National Oil Spill Detection and Response Agency (NOSDRA).',
-        at: '2026-10-01T15:20:00.000Z',
-      },
-    ],
-  },
-];
+export interface CitizenComplaint {
+  id: string;
+  referenceNumber: string;
+  trackingCode: string;
+  title: string;
+  category: string;
+  assignedAgency: string;
+  state: string;
+  status: string;
+  priority: string;
+  submittedAt: string;
+  updatedAt: string;
+  currentStage: number;
+  timeline: Array<{
+    action: string;
+    description: string;
+    at: string;
+  }>;
+}
 
 const LIFECYCLE_STAGES = [
   { step: 1, name: 'Reported', desc: 'Securely received' },
@@ -244,14 +164,13 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
   user,
   activeTab = 'overview',
   onTabChange,
+  onComplaintCountChange,
 }) => {
-  const [complaints, setComplaints] = useState(INITIAL_COMPLAINTS);
+  const [complaints, setComplaints] = useState<CitizenComplaint[]>([]);
   const [searchRef, setSearchRef] = useState('');
   const [searchCode, setSearchCode] = useState('');
   const [trackingResult, setTrackingResult] = useState<PublicReportStatus | null>(null);
-  const [selectedComplaint, setSelectedComplaint] = useState<(typeof INITIAL_COMPLAINTS)[0] | null>(
-    INITIAL_COMPLAINTS[0],
-  );
+  const [selectedComplaint, setSelectedComplaint] = useState<CitizenComplaint | null>(null);
   const [isTrackingLoading, setIsTrackingLoading] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'RESOLVED'>('ALL');
@@ -273,40 +192,86 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
   const { data: lgas = [] } = useJurisdictions('LGA', submitForm.stateCode || undefined);
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
-  // Sync with Cloud Firestore on mount
+  // Sync real reports from Cloud Firestore & local session on mount
   React.useEffect(() => {
-    firestoreService.getReports().then((remoteReports) => {
-      if (remoteReports.length > 0) {
-        setComplaints((prev) => {
-          const existingRefs = new Set(prev.map((p) => p.referenceNumber));
-          const uniqueRemote = remoteReports
-            .filter((r) => r.referenceNumber && !existingRefs.has(r.referenceNumber))
-            .map((r) => ({
-              id: r.id || `fs-${r.referenceNumber}`,
-              referenceNumber: r.referenceNumber,
-              trackingCode: r.trackingCode || 'STORED',
-              title: r.title,
-              category: r.category,
-              assignedAgency: r.assignedAgency || 'Central Intake Desk (DICON/CATCH-AM)',
-              state: r.state || 'National Domain',
-              status: r.status,
-              priority: r.priority || 'MEDIUM',
-              submittedAt: r.submittedAt,
-              updatedAt: r.updatedAt,
-              currentStage: 1,
-              timeline: r.timeline || [
-                {
-                  action: r.status,
-                  description: 'Record synced from Cloud Firestore.',
-                  at: r.submittedAt,
-                },
-              ],
-            }));
-          return [...uniqueRemote, ...prev];
+    let cancelled = false;
+
+    async function loadComplaints() {
+      try {
+        const remoteReports = await firestoreService.getReports();
+
+        // Check local storage for report references submitted in this browser session
+        const localRefs = new Set<string>();
+        try {
+          if (typeof window !== 'undefined') {
+            const raw = window.localStorage.getItem('catcham.myReports');
+            if (raw) {
+              const list = JSON.parse(raw);
+              if (Array.isArray(list)) {
+                list.forEach((item: any) => {
+                  if (typeof item === 'string') localRefs.add(item.toUpperCase());
+                  else if (item?.referenceNumber) localRefs.add(String(item.referenceNumber).toUpperCase());
+                });
+              }
+            }
+          }
+        } catch {
+          // Ignore parse errors
+        }
+
+        const userEmail = user?.email?.toLowerCase().trim();
+
+        // Include reports where the user is the contact or submitted via this browser
+        const userReports = remoteReports.filter((r) => {
+          if (!r.referenceNumber) return false;
+          if (localRefs.has(r.referenceNumber.toUpperCase())) return true;
+          if (userEmail && r.contactEmail && r.contactEmail.toLowerCase().trim() === userEmail) {
+            return true;
+          }
+          return false;
         });
+
+        const formatted: CitizenComplaint[] = userReports.map((r) => ({
+          id: r.id || `fs-${r.referenceNumber}`,
+          referenceNumber: r.referenceNumber,
+          trackingCode: r.trackingCode || 'STORED',
+          title: r.title,
+          category: r.category,
+          assignedAgency: r.assignedAgency || 'Central Intake Desk (DICON/CATCH-AM)',
+          state: r.state || 'National Domain',
+          status: r.status,
+          priority: r.priority || 'MEDIUM',
+          submittedAt: r.submittedAt,
+          updatedAt: r.updatedAt,
+          currentStage: 1,
+          timeline: r.timeline && r.timeline.length > 0 ? r.timeline : [
+            {
+              action: r.status,
+              description: 'Record synced from Cloud Firestore.',
+              at: r.submittedAt,
+            },
+          ],
+        }));
+
+        if (!cancelled) {
+          setComplaints(formatted);
+          onComplaintCountChange?.(formatted.length);
+          if (formatted.length > 0) {
+            setSelectedComplaint(formatted[0]);
+          } else {
+            setSelectedComplaint(null);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to sync complaints from Firestore:', err);
       }
-    });
-  }, []);
+    }
+
+    void loadComplaints();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.email, onComplaintCountChange]);
 
   // FG CREDICORP C.L.I.C.K.D Device Credit State
   const [credicorpForm, setCredicorpForm] = useState({
@@ -396,8 +361,22 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
         ],
       };
 
-      setComplaints((prev) => [newEntry, ...prev]);
+      setComplaints((prev) => {
+        const next = [newEntry, ...prev];
+        onComplaintCountChange?.(next.length);
+        return next;
+      });
       setSelectedComplaint(newEntry);
+
+      // Save reference to local session storage
+      try {
+        if (typeof window !== 'undefined') {
+          const raw = window.localStorage.getItem('catcham.myReports');
+          const list = raw ? JSON.parse(raw) : [];
+          list.push(newEntry.referenceNumber);
+          window.localStorage.setItem('catcham.myReports', JSON.stringify(list));
+        }
+      } catch {}
 
       // Save live to Cloud Firestore
       void firestoreService.saveReport({
@@ -432,7 +411,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
 
       setNewReceipt(simReceipt);
 
-      const newEntry = {
+      const newEntry: CitizenComplaint = {
         id: `comp-${Date.now()}`,
         referenceNumber: fallbackRef,
         trackingCode: fallbackCode,
@@ -454,8 +433,22 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
         ],
       };
 
-      setComplaints((prev) => [newEntry, ...prev]);
+      setComplaints((prev) => {
+        const next = [newEntry, ...prev];
+        onComplaintCountChange?.(next.length);
+        return next;
+      });
       setSelectedComplaint(newEntry);
+
+      // Save reference to local session storage
+      try {
+        if (typeof window !== 'undefined') {
+          const raw = window.localStorage.getItem('catcham.myReports');
+          const list = raw ? JSON.parse(raw) : [];
+          list.push(newEntry.referenceNumber);
+          window.localStorage.setItem('catcham.myReports', JSON.stringify(list));
+        }
+      } catch {}
 
       // Save live to Cloud Firestore
       void firestoreService.saveReport({
@@ -513,17 +506,22 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
       });
       setTrackingResult(result);
     } catch {
-      // Check Cloud Firestore for this reference code
       try {
         const firestoreDoc = await firestoreService.getReportByReference(searchRef);
         if (firestoreDoc) {
-          setTrackingResult({
+          const loaded: CitizenComplaint = {
+            id: firestoreDoc.id || `fs-${firestoreDoc.referenceNumber}`,
             referenceNumber: firestoreDoc.referenceNumber,
+            trackingCode: firestoreDoc.trackingCode || 'STORED',
             title: firestoreDoc.title,
-            categoryName: firestoreDoc.category,
+            category: firestoreDoc.category,
+            assignedAgency: firestoreDoc.assignedAgency || 'Central Intake Desk (DICON/CATCH-AM)',
+            state: firestoreDoc.state || 'National Domain',
             status: firestoreDoc.status,
+            priority: firestoreDoc.priority || 'MEDIUM',
             submittedAt: firestoreDoc.submittedAt,
             updatedAt: firestoreDoc.updatedAt,
+            currentStage: 1,
             timeline: firestoreDoc.timeline || [
               {
                 action: firestoreDoc.status,
@@ -531,6 +529,16 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                 at: firestoreDoc.submittedAt,
               },
             ],
+          };
+          setSelectedComplaint(loaded);
+          setTrackingResult({
+            referenceNumber: firestoreDoc.referenceNumber,
+            title: firestoreDoc.title,
+            categoryName: firestoreDoc.category,
+            status: firestoreDoc.status,
+            submittedAt: firestoreDoc.submittedAt,
+            updatedAt: firestoreDoc.updatedAt,
+            timeline: loaded.timeline,
           });
           setIsTrackingLoading(false);
           return;
@@ -538,24 +546,13 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
       } catch (fErr) {
         console.error('Firestore track lookup error:', fErr);
       }
-      if (complaints[0]) {
-        setSelectedComplaint(complaints[0]);
-        setTrackingResult({
-          referenceNumber: complaints[0].referenceNumber,
-          title: complaints[0].title,
-          categoryName: complaints[0].category,
-          status: complaints[0].status,
-          submittedAt: complaints[0].submittedAt,
-          updatedAt: complaints[0].updatedAt,
-          timeline: complaints[0].timeline,
-        });
-      }
+      alert('No record found for reference: ' + searchRef.trim().toUpperCase());
     } finally {
       setIsTrackingLoading(false);
     }
   };
 
-  const handleSelectComplaint = (complaint: (typeof INITIAL_COMPLAINTS)[0]) => {
+  const handleSelectComplaint = (complaint: CitizenComplaint) => {
     setSelectedComplaint(complaint);
     setSearchRef(complaint.referenceNumber);
     setSearchCode(complaint.trackingCode);
@@ -1605,7 +1602,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
               </div>
             </div>
             <p className="text-2xl sm:text-3xl font-extrabold text-amber-600 mt-2 font-mono">
-              {complaints.filter((c) => c.status === 'SUBMITTED' || c.status === 'TRIAGED').length || 1}
+              {complaints.filter((c) => c.status === 'SUBMITTED' || c.status === 'TRIAGED').length}
             </p>
             <p className="text-[11px] text-neutral-500 mt-1">Under command intake review</p>
           </CardContent>
@@ -1624,7 +1621,11 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
             <p className="text-2xl sm:text-3xl font-extrabold text-[#006B3C] mt-2 font-mono">
               {complaints.filter((c) => c.status === 'UNDER_INVESTIGATION' || c.status === 'ROUTED').length}
             </p>
-            <p className="text-[11px] text-neutral-500 mt-1">Assigned to EFCC & NOSDRA</p>
+            <p className="text-[11px] text-neutral-500 mt-1">
+              {complaints.filter((c) => c.status === 'UNDER_INVESTIGATION' || c.status === 'ROUTED').length > 0
+                ? 'Assigned to active field taskforce'
+                : 'No active investigations'}
+            </p>
           </CardContent>
         </Card>
 
@@ -1639,9 +1640,9 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
               </div>
             </div>
             <p className="text-2xl sm:text-3xl font-extrabold text-neutral-900 mt-2 font-mono">
-              0
+              {complaints.filter((c) => c.status === 'RESOLVED' || c.status === 'CLOSED').length}
             </p>
-            <p className="text-[11px] text-neutral-500 mt-1">Archived in legal repository</p>
+            <p className="text-[11px] text-neutral-500 mt-1">Archived in secure ledger</p>
           </CardContent>
         </Card>
       </div>
@@ -1657,21 +1658,6 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
             <p className="text-xs text-neutral-500 mt-0.5">
               Enter any report reference number or select an existing complaint to view its full lifecycle audit trail.
             </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-neutral-500">Quick Demo Ref:</span>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchRef('CTM-2026-B7ABA1');
-                setSearchCode('TK-9921-X4');
-                handleSelectComplaint(INITIAL_COMPLAINTS[0]);
-              }}
-              className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded border border-emerald-200 transition-colors cursor-pointer"
-            >
-              CTM-2026-B7ABA1
-            </button>
           </div>
         </CardHeader>
 
@@ -1715,7 +1701,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
           </form>
 
           {/* Active Complaint Status View */}
-          {selectedComplaint && (
+          {selectedComplaint ? (
             <div className="rounded-xl border border-neutral-200 bg-neutral-50/70 p-5 space-y-6">
               {/* Top Details Header */}
               <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-neutral-200">
@@ -1830,6 +1816,27 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                 </ol>
               </div>
             </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-neutral-300 bg-neutral-50/50 p-8 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto border border-emerald-200">
+                <FileSearch className="w-6 h-6" />
+              </div>
+              <div className="max-w-md mx-auto">
+                <h4 className="text-sm font-bold text-neutral-900">No Incident Report Selected</h4>
+                <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                  Enter your reference number in the search box above to track a case in real-time, or lodge your first encrypted disclosure.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs font-bold border-emerald-600 text-emerald-700 hover:bg-emerald-50 cursor-pointer"
+                onClick={() => onTabChange?.('submit')}
+              >
+                <FilePlus className="w-3.5 h-3.5 mr-1.5" />
+                <span>Submit a Report Now</span>
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -1868,7 +1875,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
-              Active ({complaints.length})
+              Active ({complaints.filter((c) => c.status !== 'RESOLVED' && c.status !== 'CLOSED').length})
             </button>
             <button
               type="button"
@@ -1879,83 +1886,108 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
-              Resolved (0)
+              Resolved ({complaints.filter((c) => c.status === 'RESOLVED' || c.status === 'CLOSED').length})
             </button>
           </div>
         </CardHeader>
 
         <CardContent className="p-0">
           <div className="divide-y divide-neutral-200">
-            {filteredComplaints.map((c) => {
-              const isSelected = selectedComplaint?.id === c.id;
-
-              return (
-                <div
-                  key={c.id}
-                  className={`p-5 sm:p-6 transition-colors flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 ${
-                    isSelected ? 'bg-emerald-50/50' : 'hover:bg-neutral-50'
-                  }`}
-                >
-                  <div className="space-y-1.5 min-w-0 max-w-2xl">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-neutral-800 bg-neutral-100 px-2 py-0.5 rounded border border-neutral-300">
-                        {c.referenceNumber}
-                      </span>
-                      <span className="text-xs text-neutral-500 font-medium">{c.category}</span>
-                      <span className="text-xs text-neutral-400">· {c.state}</span>
-                    </div>
-
-                    <h4 className="text-base font-bold text-neutral-950 leading-snug">
-                      {c.title}
-                    </h4>
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-600">
-                      <span>
-                        <strong className="text-neutral-800">Agency:</strong> {c.assignedAgency}
-                      </span>
-                      <span>
-                        <strong className="text-neutral-800">Submitted:</strong> {formatDateTime(c.submittedAt)}
-                      </span>
-                      <span className="inline-flex items-center gap-1 font-mono text-[11px] text-neutral-500">
-                        <span>Token:</span>
-                        <code>{c.trackingCode}</code>
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(c.trackingCode, c.id)}
-                          className="hover:text-emerald-700 ml-0.5 cursor-pointer"
-                          title="Copy tracking token"
-                        >
-                          <Copy className="w-3 h-3" />
-                        </button>
-                        {copiedCode === c.id && (
-                          <span className="text-[10px] text-emerald-600 font-sans">Copied!</span>
-                        )}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3 shrink-0">
-                    <Badge status={statusBadge(c.status)}>{humanise(c.status)}</Badge>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded bg-red-100 text-red-800 font-mono">
-                      {c.priority}
-                    </span>
-
-                    <Button
-                      size="sm"
-                      variant={isSelected ? 'primary' : 'outline'}
-                      onClick={() => {
-                        handleSelectComplaint(c);
-                        onTabChange?.('track');
-                      }}
-                      className="gap-1.5 cursor-pointer"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>{isSelected ? 'Viewing Timeline' : 'View Milestones'}</span>
-                    </Button>
-                  </div>
+            {filteredComplaints.length === 0 ? (
+              <div className="p-12 text-center space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-neutral-100 text-neutral-400 flex items-center justify-center mx-auto border border-neutral-200">
+                  <Inbox className="w-7 h-7" />
                 </div>
-              );
-            })}
+                <div className="max-w-md mx-auto">
+                  <h4 className="text-base font-bold text-neutral-900">
+                    No Complaints Lodged Yet
+                  </h4>
+                  <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                    You have not submitted any incident reports. Once you file an encrypted report, its reference number, tracking token, and investigation milestones will appear here.
+                  </p>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onTabChange?.('submit')}
+                  className="gap-2 cursor-pointer bg-[#006B3C] hover:bg-[#005731]"
+                >
+                  <FilePlus className="w-4 h-4" />
+                  <span>Submit Your First Report</span>
+                </Button>
+              </div>
+            ) : (
+              filteredComplaints.map((c) => {
+                const isSelected = selectedComplaint?.id === c.id;
+
+                return (
+                  <div
+                    key={c.id}
+                    className={`p-5 sm:p-6 transition-colors flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 ${
+                      isSelected ? 'bg-emerald-50/50' : 'hover:bg-neutral-50'
+                    }`}
+                  >
+                    <div className="space-y-1.5 min-w-0 max-w-2xl">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-neutral-800 bg-neutral-100 px-2 py-0.5 rounded border border-neutral-300">
+                          {c.referenceNumber}
+                        </span>
+                        <span className="text-xs text-neutral-500 font-medium">{c.category}</span>
+                        <span className="text-xs text-neutral-400">· {c.state}</span>
+                      </div>
+
+                      <h4 className="text-base font-bold text-neutral-950 leading-snug">
+                        {c.title}
+                      </h4>
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-600">
+                        <span>
+                          <strong className="text-neutral-800">Agency:</strong> {c.assignedAgency}
+                        </span>
+                        <span>
+                          <strong className="text-neutral-800">Submitted:</strong> {formatDateTime(c.submittedAt)}
+                        </span>
+                        <span className="inline-flex items-center gap-1 font-mono text-[11px] text-neutral-500">
+                          <span>Token:</span>
+                          <code>{c.trackingCode}</code>
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(c.trackingCode, c.id)}
+                            className="hover:text-emerald-700 ml-0.5 cursor-pointer"
+                            title="Copy tracking token"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
+                          {copiedCode === c.id && (
+                            <span className="text-[10px] text-emerald-600 font-sans">Copied!</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 shrink-0">
+                      <Badge status={statusBadge(c.status)}>{humanise(c.status)}</Badge>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-red-100 text-red-800 font-mono">
+                        {c.priority}
+                      </span>
+
+                      <Button
+                        size="sm"
+                        variant={isSelected ? 'primary' : 'outline'}
+                        onClick={() => {
+                          handleSelectComplaint(c);
+                          onTabChange?.('track');
+                        }}
+                        className="gap-1.5 cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>{isSelected ? 'Viewing Timeline' : 'View Milestones'}</span>
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </CardContent>
       </Card>

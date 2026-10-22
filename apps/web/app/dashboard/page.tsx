@@ -48,6 +48,7 @@ function DashboardContainer() {
 
   const [viewMode, setViewMode] = React.useState<'citizen' | 'officer' | null>(null);
   const [activeTab, setActiveTab] = React.useState(urlTab || 'overview');
+  const [complaintCount, setComplaintCount] = React.useState(0);
 
   React.useEffect(() => {
     if (urlTab) {
@@ -74,7 +75,7 @@ function DashboardContainer() {
             <CitizenSidebar
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              complaintCount={3}
+              complaintCount={complaintCount}
               isOfficer={Boolean(isOfficer)}
               onToggleOfficerMode={() =>
                 setViewMode(currentMode === 'citizen' ? 'officer' : 'citizen')
@@ -103,6 +104,7 @@ function DashboardContainer() {
             user={user}
             activeTab={activeTab}
             onTabChange={setActiveTab}
+            onComplaintCountChange={setComplaintCount}
           />
         </AppShell>
       </RequireAuth>
