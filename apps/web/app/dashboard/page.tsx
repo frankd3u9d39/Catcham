@@ -23,7 +23,6 @@ import { useInvestigations, useWorkload } from '@/hooks/use-investigations';
 import { useReports } from '@/hooks/use-reports';
 import { useOverdueCases } from '@/hooks/use-platform';
 import { useSearchParams } from 'next/navigation';
-import { CitizenSidebar } from '@/components/layout/citizen-sidebar';
 import { CitizenDashboardView } from '@/components/portal/citizen-dashboard-view';
 import {
   formatRelative,
@@ -53,16 +52,23 @@ function DashboardContainer() {
   React.useEffect(() => {
     if (urlTab) {
       setActiveTab(urlTab);
+    } else {
+      setActiveTab('overview');
     }
   }, [urlTab]);
 
-  const isOfficer =
+  const isOfficer = Boolean(
     can('report:read') ||
     can('investigation:read') ||
     can('analytics:read') ||
-    (user?.roleCodes && user.roleCodes.length > 0);
+    can('audit:read') ||
+    can('user:read') ||
+    user?.roleCodes?.some((r) =>
+      ['ADMIN', 'SUPERVISOR', 'INVESTIGATOR', 'INTAKE_OFFICER', 'COMMANDER'].includes(r.toUpperCase())
+    )
+  );
 
-  // If user has no officer permissions, they are a Citizen.
+  // If user has no officer permissions or roles, they are a Citizen.
   // If user is an officer, default to 'officer' unless they toggle 'citizen' mode.
   const currentMode = viewMode ?? (isOfficer ? 'officer' : 'citizen');
 
@@ -71,17 +77,6 @@ function DashboardContainer() {
       <RequireAuth>
         <AppShell
           breadcrumbs={[{ label: 'Citizen Portal' }, { label: humanise(activeTab) }]}
-          customSidebar={
-            <CitizenSidebar
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              complaintCount={complaintCount}
-              isOfficer={Boolean(isOfficer)}
-              onToggleOfficerMode={() =>
-                setViewMode(currentMode === 'citizen' ? 'officer' : 'citizen')
-              }
-            />
-          }
         >
           {isOfficer && (
             <div className="mb-5 bg-emerald-950/80 border border-emerald-500/30 rounded-xl p-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-white shadow-sm">
@@ -103,7 +98,18 @@ function DashboardContainer() {
           <CitizenDashboardView
             user={user}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              if (typeof window !== 'undefined') {
+                const url = new URL(window.location.href);
+                if (tab === 'overview') {
+                  url.searchParams.delete('tab');
+                } else {
+                  url.searchParams.set('tab', tab);
+                }
+                window.history.pushState({}, '', url.toString());
+              }
+            }}
             onComplaintCountChange={setComplaintCount}
           />
         </AppShell>
@@ -126,7 +132,7 @@ function DashboardContainer() {
             onClick={() => setViewMode('citizen')}
             className="text-xs font-bold text-emerald-400 hover:text-emerald-300 underline self-start sm:self-auto flex items-center gap-1 cursor-pointer"
           >
-            <span>Switch to Citizen Complainant View</span>
+            <span>Preview Citizen Complainant View</span>
             <span>&rarr;</span>
           </button>
         </div>

@@ -1523,8 +1523,286 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
         </div>
       )}
 
-      {/* 2.5. DICON/CATCH-AM × FG CREDICORP C.L.I.C.K.D PARTNERSHIP SPOTLIGHT */}
-      {activeTab !== 'credicorp' && activeTab !== 'submit' && (
+      {/* 2.3. SAFETY BULLETINS & REGIONAL SURVEILLANCE NOTICES (activeTab === 'alerts') */}
+      {activeTab === 'alerts' && (
+        <Card className="border-neutral-200 shadow-xl overflow-hidden bg-white">
+          <CardHeader className="bg-gradient-to-r from-neutral-950 via-[#1a0f0a] to-neutral-900 text-white p-6 sm:p-8 border-b border-neutral-800">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-amber-400 text-xs font-mono font-bold uppercase tracking-wider mb-2">
+                  <Radio className="w-4 h-4 text-amber-400 animate-pulse" />
+                  <span>NATIONAL THREAT ADVISORY & CITIZEN SAFETY BULLETINS</span>
+                </div>
+                <CardTitle className="text-2xl sm:text-3xl font-bold font-serif text-white tracking-tight flex items-center gap-2.5">
+                  <ShieldAlert className="w-7 h-7 text-amber-400" />
+                  <span>Public Safety Bulletins & Active Advisories</span>
+                </CardTitle>
+                <p className="text-xs sm:text-sm text-neutral-300 mt-2 max-w-3xl leading-relaxed">
+                  Real-time threat intelligence and public security advisories verified by DICON/CATCH-AM joint command desks and partner security agencies across Nigerian corridors.
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onTabChange?.('overview')}
+                className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 self-start sm:self-auto shrink-0 cursor-pointer"
+              >
+                &larr; Return to Overview
+              </Button>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-6 sm:p-8 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-xl border border-red-200 bg-red-50/70 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-200 text-red-900">
+                    CRITICAL ADVISORY · ALERT LEVEL 3
+                  </span>
+                  <span className="text-[11px] text-neutral-500 font-mono">Updated 3h ago</span>
+                </div>
+                <h4 className="text-base font-bold text-neutral-950">
+                  Pipeline Right-of-Way Vigilance: Bonny-Eleme Corridor
+                </h4>
+                <p className="text-xs text-neutral-700 leading-relaxed">
+                  Heightened interdiction activity active. Citizens residing in oil terminal buffer zones are urged to immediately report unauthorized nocturnal heavy truck movements or suspicious excavation tools via CATCH-AM secure intake.
+                </p>
+                <div className="pt-2 flex items-center justify-between border-t border-red-200/80">
+                  <span className="text-xs font-bold text-red-800 font-mono">Target Area: Rivers / Delta</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-red-300 text-red-800 hover:bg-red-100 text-xs font-bold cursor-pointer"
+                    onClick={() => onTabChange?.('submit')}
+                  >
+                    Lodge Intel &rarr;
+                  </Button>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-amber-200 text-amber-900">
+                    CYBER NOTICE · FRAUD IMPERSONATION
+                  </span>
+                  <span className="text-[11px] text-neutral-500 font-mono">Active Standing Notice</span>
+                </div>
+                <h4 className="text-base font-bold text-neutral-950">
+                  Fraudulent Recruitment & Clearance Agents Alert
+                </h4>
+                <p className="text-xs text-neutral-700 leading-relaxed">
+                  Criminal syndicates are soliciting payments for fraudulent security clearance letters claiming DICON/CATCH-AM affiliation. All official disclosures and services are 100% free through this verified portal.
+                </p>
+                <div className="pt-2 flex items-center justify-between border-t border-amber-200/80">
+                  <span className="text-xs font-bold text-amber-900 font-mono">Scope: Nationwide</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-amber-300 text-amber-900 hover:bg-amber-100 text-xs font-bold cursor-pointer"
+                    onClick={() => onTabChange?.('submit')}
+                  >
+                    Report Impersonator &rarr;
+                  </Button>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-blue-200 text-blue-900">
+                    TRANSIT SECURITY · CHECKPOINT PROTOCOL
+                  </span>
+                  <span className="text-[11px] text-neutral-500 font-mono">Operational Notice</span>
+                </div>
+                <h4 className="text-base font-bold text-neutral-950">
+                  Northern Highway Freight & Customs Interdiction
+                </h4>
+                <p className="text-xs text-neutral-700 leading-relaxed">
+                  Joint checkpoint verifications expanded across Kaduna-Kano expressway corridors. Drivers and logistics coordinators are reminded to ensure manifests and vehicle papers are digitalized.
+                </p>
+                <div className="pt-2 flex items-center justify-between border-t border-blue-200/80">
+                  <span className="text-xs font-bold text-blue-900 font-mono">Corridor: North-West Link</span>
+                  <span className="text-[11px] text-neutral-500 font-mono">DICON Desk Monitored</span>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-emerald-200 text-emerald-900">
+                    EMERGENCY COMMUNICATIONS HOTLINE
+                  </span>
+                  <span className="text-[11px] text-neutral-500 font-mono">24/7 Rapid Response</span>
+                </div>
+                <h4 className="text-base font-bold text-neutral-950">
+                  Toll-Free Dispatch Lines & Encrypted Direct Messaging
+                </h4>
+                <p className="text-xs text-neutral-700 leading-relaxed">
+                  For ongoing emergencies or imminent threats to public safety, reach the inter-agency dispatch desks directly:
+                </p>
+                <div className="rounded-lg bg-white p-3 border border-emerald-200 text-xs space-y-1 font-mono">
+                  <p><strong className="text-neutral-900">National Emergency:</strong> 112 / 0800-CATCHAM</p>
+                  <p><strong className="text-neutral-900">Official Email:</strong> diconcatcham@gmail.com</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 2.4. WHISTLEBLOWER VAULT & SOVEREIGN PROTECTION (activeTab === 'privacy') */}
+      {activeTab === 'privacy' && (
+        <Card className="border-neutral-200 shadow-xl overflow-hidden bg-white">
+          <CardHeader className="bg-gradient-to-r from-neutral-950 via-[#071912] to-neutral-900 text-white p-6 sm:p-8 border-b border-emerald-900/40">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider mb-2">
+                  <Lock className="w-4 h-4 text-emerald-400" />
+                  <span>SOVEREIGN CRYPTOGRAPHIC VAULT & ANONYMITY STANDARD</span>
+                </div>
+                <CardTitle className="text-2xl sm:text-3xl font-bold font-serif text-white tracking-tight flex items-center gap-2.5">
+                  <Shield className="w-7 h-7 text-emerald-400" />
+                  <span>Whistleblower Vault & Legal Protection Guarantee</span>
+                </CardTitle>
+                <p className="text-xs sm:text-sm text-neutral-300 mt-2 max-w-3xl leading-relaxed">
+                  Submissions committed to the CATCH-AM platform benefit from sovereign protection under the Defence Industries Corporation of Nigeria (DICON/CATCH-AM) statutory framework.
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onTabChange?.('overview')}
+                className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 self-start sm:self-auto shrink-0 cursor-pointer"
+              >
+                &larr; Return to Overview
+              </Button>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-6 sm:p-8 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-5 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-2">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5 text-emerald-700" />
+                </div>
+                <h5 className="font-bold text-neutral-950 text-sm">Cryptographic Data Stripping</h5>
+                <p className="text-xs text-neutral-600 leading-relaxed">
+                  All IP addresses, browser fingerprints, and hardware identifiers are cryptographically stripped before incident ingestion. Only raw hashed payloads reach intake triage desks.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-2">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <KeyRound className="w-5 h-5 text-emerald-700" />
+                </div>
+                <h5 className="font-bold text-neutral-950 text-sm">Private Tracking Tokens</h5>
+                <p className="text-xs text-neutral-600 leading-relaxed">
+                  Complainants can monitor investigation milestones anonymously using their unique private tracking tokens without disclosing personal identification to field investigators.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-2">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-emerald-700" />
+                </div>
+                <h5 className="font-bold text-neutral-950 text-sm">Statutory Immunity</h5>
+                <p className="text-xs text-neutral-600 leading-relaxed">
+                  Good-faith civic reporting is shielded under Federal whistleblower protection provisions. Inter-agency investigators are bound by severe legal penalties against unauthorized disclosure.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-5 space-y-3">
+              <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span>Ready to submit an encrypted report?</span>
+              </div>
+              <p className="text-xs text-neutral-700 leading-relaxed">
+                You can choose to link disclosures to your complainant account for direct push notifications, or select complete anonymity with one click.
+              </p>
+              <Button
+                variant="primary"
+                size="sm"
+                className="gap-2 bg-[#006B3C] hover:bg-[#005731] cursor-pointer"
+                onClick={() => onTabChange?.('submit')}
+              >
+                <FilePlus className="w-4 h-4" />
+                <span>Open Secure Intake Form</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 2.5. COMPLAINANT PROFILE VIEW (activeTab === 'profile') */}
+      {activeTab === 'profile' && (
+        <Card className="border-neutral-200 shadow-xl overflow-hidden bg-white">
+          <CardHeader className="bg-neutral-900 text-white p-6 sm:p-8 border-b border-neutral-800">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider mb-2">
+                  <User className="w-4 h-4 text-emerald-400" />
+                  <span>CITIZEN COMPLAINANT IDENTIFICATION</span>
+                </div>
+                <CardTitle className="text-2xl sm:text-3xl font-bold font-serif text-white tracking-tight">
+                  Complainant Profile & Account Security
+                </CardTitle>
+                <p className="text-xs sm:text-sm text-neutral-300 mt-2 max-w-2xl leading-relaxed">
+                  Your registered complainant credentials and active session verification under DICON/CATCH-AM.
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onTabChange?.('overview')}
+                className="border-neutral-700 text-neutral-300 hover:bg-neutral-800 self-start sm:self-auto shrink-0 cursor-pointer"
+              >
+                &larr; Return to Overview
+              </Button>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-6 sm:p-8 space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70">
+                <p className="text-[10px] font-mono font-bold uppercase text-neutral-500">Complainant Legal Name</p>
+                <p className="text-base font-bold text-neutral-950 mt-1">{user?.fullName ?? 'Citizen Reporter'}</p>
+              </div>
+              <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70">
+                <p className="text-[10px] font-mono font-bold uppercase text-neutral-500">Registered Email Address</p>
+                <p className="text-base font-bold text-neutral-950 mt-1">{user?.email ?? 'Unspecified'}</p>
+              </div>
+              <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70">
+                <p className="text-[10px] font-mono font-bold uppercase text-neutral-500">Complainant Verification Status</p>
+                <p className="text-sm font-bold text-emerald-700 mt-1 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Verified Citizen Submitter</span>
+                </p>
+              </div>
+              <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70">
+                <p className="text-[10px] font-mono font-bold uppercase text-neutral-500">Security & Session Status</p>
+                <p className="text-sm font-bold text-emerald-700 mt-1 flex items-center gap-1.5 font-mono">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Encrypted SSL/TLS 1.3 Active</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 flex flex-wrap items-center gap-3">
+              <Link href="/settings">
+                <Button variant="outline" className="gap-2 border-neutral-300 cursor-pointer">
+                  <KeyRound className="w-4 h-4" />
+                  <span>Change Password & Manage Sessions in Settings</span>
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 2.6. DICON/CATCH-AM × FG CREDICORP C.L.I.C.K.D PARTNERSHIP SPOTLIGHT */}
+      {activeTab !== 'credicorp' && activeTab !== 'submit' && activeTab !== 'alerts' && activeTab !== 'privacy' && activeTab !== 'profile' && (
         <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-neutral-950 via-[#071912] to-neutral-900 p-6 sm:p-7 text-white shadow-xl relative overflow-hidden">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
@@ -1569,8 +1847,11 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
         </div>
       )}
 
-      {/* 3. STATISTIC TILES */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* 3. OVERVIEW SECTIONS (Rendered when no dedicated full-page tab is active) */}
+      {!['submit', 'credicorp', 'alerts', 'privacy', 'profile'].includes(activeTab) && (
+        <>
+          {/* STATISTIC TILES */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="border-neutral-200 bg-white shadow-sm">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center justify-between">
@@ -2039,6 +2320,8 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };
