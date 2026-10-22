@@ -112,53 +112,6 @@ function LoginForm() {
             </Button>
           </form>
 
-          {/* Quick Demo Access Buttons */}
-          <div className="mt-4 pt-4 border-t border-dashed border-neutral-200">
-            <p className="text-[11px] font-mono font-semibold uppercase text-neutral-400 text-center mb-2">
-              Instant Demo Access
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={async () => {
-                  setEmail('citizen@catcham.local');
-                  setPassword('Demo2026!');
-                  setIsSubmitting(true);
-                  try {
-                    await login('citizen@catcham.local', 'Demo2026!');
-                    router.replace(next);
-                  } catch (err) {
-                    setError(err);
-                  } finally {
-                    setIsSubmitting(false);
-                  }
-                }}
-                className="p-2.5 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-semibold text-center transition-all cursor-pointer shadow-2xs"
-              >
-                Citizen Portal &rarr;
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  setEmail('admin@catcham.gov.ng');
-                  setPassword('Demo2026!');
-                  setIsSubmitting(true);
-                  try {
-                    await login('admin@catcham.gov.ng', 'Demo2026!');
-                    router.replace(next);
-                  } catch (err) {
-                    setError(err);
-                  } finally {
-                    setIsSubmitting(false);
-                  }
-                }}
-                className="p-2.5 rounded-lg border border-emerald-600/30 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold text-center transition-all cursor-pointer shadow-2xs"
-              >
-                Super Admin Desk &rarr;
-              </button>
-            </div>
-          </div>
-
           <div className="mt-4 text-center text-xs text-neutral-600">
             <span>New user? </span>
             <Link href="/register" className="text-emerald-700 font-bold hover:underline">

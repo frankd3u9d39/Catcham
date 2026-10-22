@@ -9,14 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/providers/auth-provider';
 import { useUnreadCount } from '@/hooks/use-platform';
 import { humanise } from '@/lib/format';
-import { cn } from '@/lib/utils';
-import { usePortalMode } from '@/hooks/use-portal-mode';
 
 export const Topbar: React.FC = () => {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, can, logout } = useAuth();
   const { data: unread } = useUnreadCount();
-  const { isOfficerMode } = usePortalMode();
   const [query, setQuery] = useState('');
 
   const unreadCount = unread?.count ?? 0;
@@ -54,29 +51,17 @@ export const Topbar: React.FC = () => {
             height={28}
             className="rounded-full bg-white border border-neutral-200 shrink-0"
           />
-          <div className="min-w-0 leading-tight">
-            <span className="font-bold tracking-tight text-neutral-950 text-sm block truncate">
-              CATCHAM
-            </span>
-            <span
-              className={cn(
-                'text-[9px] font-mono font-bold block truncate',
-                isOfficerMode ? 'text-amber-600' : 'text-emerald-600'
-              )}
-            >
-              {isOfficerMode ? 'ADMIN COMMAND' : 'CITIZEN'}
-            </span>
-          </div>
+          <span className="font-bold tracking-tight text-neutral-950 text-sm truncate">
+            CATCHAM
+          </span>
         </Link>
 
         {/* Desktop Role Badge */}
         <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-50 border border-neutral-200 text-xs text-neutral-700">
-          <Shield className={cn('w-4 h-4 shrink-0', isOfficerMode ? 'text-amber-600' : 'text-emerald-600')} />
-          <span className="shrink-0">Portal View:</span>
+          <Shield className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span className="shrink-0">Role:</span>
           <strong className="text-neutral-900 font-semibold truncate">
-            {isOfficerMode
-              ? 'Super Admin & Agency Command'
-              : (user?.roleCodes?.map(humanise).join(', ') || 'Citizen Complainant')}
+            {user ? user.roleCodes.map(humanise).join(', ') || 'No role assigned' : '—'}
           </strong>
         </div>
         {user && user.agencyIds.length > 1 && (

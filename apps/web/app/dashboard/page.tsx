@@ -22,7 +22,6 @@ import { useAuth } from '@/providers/auth-provider';
 import { useInvestigations, useWorkload } from '@/hooks/use-investigations';
 import { useReports } from '@/hooks/use-reports';
 import { useOverdueCases } from '@/hooks/use-platform';
-import { usePortalMode } from '@/hooks/use-portal-mode';
 import { useSearchParams } from 'next/navigation';
 import { CitizenDashboardView } from '@/components/portal/citizen-dashboard-view';
 import {
@@ -46,7 +45,6 @@ function DashboardContainer() {
   const searchParams = useSearchParams();
   const urlTab = searchParams.get('tab');
 
-  const { portalMode, setPortalMode, isOfficerMode } = usePortalMode();
   const [activeTab, setActiveTab] = React.useState(urlTab || 'overview');
   const [complaintCount, setComplaintCount] = React.useState(0);
 
@@ -69,27 +67,12 @@ function DashboardContainer() {
     )
   );
 
-  if (portalMode === 'citizen') {
+  if (!isOfficer) {
     return (
       <RequireAuth>
         <AppShell
           breadcrumbs={[{ label: 'Citizen Portal' }, { label: humanise(activeTab) }]}
         >
-          <div className="mb-5 bg-slate-900 border border-slate-700/80 rounded-xl p-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-white shadow-sm">
-            <div className="flex items-center gap-2 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>
-                <strong>Citizen Portal Mode:</strong> Viewing Citizen Complainant Portal & Reports.
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setPortalMode('officer')}
-              className="text-xs font-bold text-emerald-300 hover:text-white underline self-start sm:self-auto cursor-pointer"
-            >
-              Switch to Super Admin Command View &rarr;
-            </button>
-          </div>
           <CitizenDashboardView
             user={user}
             activeTab={activeTab}
@@ -114,23 +97,7 @@ function DashboardContainer() {
 
   return (
     <RequireAuth>
-      <AppShell breadcrumbs={[{ label: 'Super Admin & Agency Dashboard' }]}>
-        <div className="mb-4 bg-slate-900 border border-slate-700/80 rounded-xl p-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-white shadow-sm">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-            <span className="font-semibold text-slate-200">
-              Super Admin & Agency Command Portal ({user?.roleCodes?.map(humanise).join(', ') || 'Commander'})
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setPortalMode('citizen')}
-            className="text-xs font-bold text-amber-300 hover:text-white underline self-start sm:self-auto flex items-center gap-1 cursor-pointer"
-          >
-            <span>Switch to Citizen Complainant View</span>
-            <span>&rarr;</span>
-          </button>
-        </div>
+      <AppShell breadcrumbs={[{ label: 'Agency Dashboard' }]}>
         <Dashboard />
       </AppShell>
     </RequireAuth>
