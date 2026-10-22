@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/auth-provider';
+import { usePortalMode } from '@/hooks/use-portal-mode';
 import {
   BarChart3,
   Bell,
@@ -253,13 +254,17 @@ function SidebarNavContent() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isOfficer = isOfficerUser(user, can);
+  React.useEffect(() => {
+    const handleOpen = () => setMobileOpen(true);
+    window.addEventListener('catcham:open-sidebar', handleOpen);
+    return () => window.removeEventListener('catcham:open-sidebar', handleOpen);
+  }, []);
 
-  const sections = isOfficer
-    ? OFFICER_SECTIONS.map((section) => ({
-        ...section,
-        items: section.items.filter((item) => !item.permission || can(item.permission)),
-      })).filter((section) => section.items.length > 0)
+  const { portalMode, setPortalMode, isOfficerMode } = usePortalMode();
+  const isOfficer = isOfficerMode;
+
+  const sections = isOfficerMode
+    ? OFFICER_SECTIONS
     : CITIZEN_SECTIONS;
 
   const isItemActive = (item: NavItem) => {
@@ -285,11 +290,14 @@ function SidebarNavContent() {
               <span className="font-bold tracking-tight text-neutral-white text-base block truncate">
                 CATCHAM
               </span>
-              {!isOfficer && (
-                <span className="text-[10px] uppercase font-mono font-bold tracking-wider text-emerald-400 block -mt-0.5">
-                  CITIZEN PORTAL
-                </span>
-              )}
+              <span
+                className={cn(
+                  'text-[10px] uppercase font-mono font-bold tracking-wider block -mt-0.5',
+                  isOfficerMode ? 'text-amber-400' : 'text-emerald-400'
+                )}
+              >
+                {isOfficerMode ? 'SUPER ADMIN COMMAND' : 'CITIZEN PORTAL'}
+              </span>
             </div>
           </Link>
         ) : (
@@ -323,20 +331,40 @@ function SidebarNavContent() {
         </button>
       </div>
 
-      {/* Security Status Ribbon for Citizens */}
-      {!collapsed && !isOfficer && (
+      {/* Mode Switcher Banner in Sidebar */}
+      {!collapsed && (
         <div className="px-3 pt-3 pb-1 shrink-0">
-          {/* <div className="rounded-lg bg-emerald-950/40 border border-emerald-500/20 px-3 py-2 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-emerald-300 truncate">
-                Encrypted Session
-              </p>
-              <p className="text-[9px] text-emerald-500/80 uppercase font-mono">
-                Anonymity Shield Active
-              </p>
+          <button
+            type="button"
+            onClick={() => {
+              const nextMode = isOfficerMode ? 'citizen' : 'officer';
+              setPortalMode(nextMode);
+              if (pathname !== '/dashboard') {
+                window.location.href = '/dashboard';
+              }
+            }}
+            className={cn(
+              'w-full p-2 px-2.5 rounded-lg text-xs font-semibold flex items-center justify-between gap-2 border transition-all cursor-pointer',
+              isOfficerMode
+                ? 'bg-amber-950/40 border-amber-500/30 text-amber-300 hover:bg-amber-900/40'
+                : 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300 hover:bg-emerald-900/40'
+            )}
+          >
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span
+                className={cn(
+                  'w-2 h-2 rounded-full animate-pulse shrink-0',
+                  isOfficerMode ? 'bg-amber-400' : 'bg-emerald-400'
+                )}
+              />
+              <span className="truncate">
+                {isOfficerMode ? 'Super Admin Mode' : 'Citizen Portal Mode'}
+              </span>
             </div>
-          </div> */}
+            <span className="text-[10px] underline shrink-0 font-normal opacity-90 hover:opacity-100">
+              Switch &rarr;
+            </span>
+          </button>
         </div>
       )}
 

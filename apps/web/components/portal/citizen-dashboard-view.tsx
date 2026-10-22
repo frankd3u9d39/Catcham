@@ -653,29 +653,29 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <Link href="/report">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 w-full lg:w-auto shrink-0">
+            <Link href="/report" className="w-full sm:w-auto">
               <Button
                 variant="primary"
-                className="gap-2 shadow-lg shadow-emerald-950/50 cursor-pointer"
+                className="w-full sm:w-auto gap-2 shadow-lg shadow-emerald-950/50 cursor-pointer justify-center"
               >
                 <FilePlus className="w-4 h-4" />
                 <span>Submit New Report</span>
               </Button>
             </Link>
-            <Link href="/track">
+            <Link href="/track" className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                className="gap-2 border-neutral-700 text-neutral-200 hover:bg-neutral-800 cursor-pointer"
+                className="w-full sm:w-auto gap-2 border-neutral-700 text-neutral-200 hover:bg-neutral-800 cursor-pointer justify-center"
               >
                 <FileSearch className="w-4 h-4" />
                 <span>Track Complaint</span>
               </Button>
             </Link>
-            <Link href="/credicorp">
+            <Link href="/credicorp" className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                className="gap-2 border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/40 cursor-pointer transition-all"
+                className="w-full sm:w-auto gap-2 border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/40 cursor-pointer transition-all justify-center"
               >
                 <Laptop className="w-4 h-4 text-emerald-400" />
                 <span>CREDICORP Device Credit</span>
@@ -1841,11 +1841,11 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-              <Link href="/credicorp">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+              <Link href="/credicorp" className="w-full sm:w-auto">
                 <Button
                   variant="primary"
-                  className="gap-2 bg-[#006B3C] hover:bg-[#005731] text-white shadow-lg font-bold text-xs uppercase tracking-wider py-3.5 px-6 cursor-pointer"
+                  className="w-full sm:w-auto gap-2 bg-[#006B3C] hover:bg-[#005731] text-white shadow-lg font-bold text-xs uppercase tracking-wider py-3.5 px-6 cursor-pointer justify-center"
                 >
                   <Laptop className="w-4 h-4" />
                   <span>Apply for Device Credit &rarr;</span>
@@ -2146,22 +2146,22 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Link href="/complaints">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 w-full sm:w-auto">
+            <Link href="/complaints" className="w-full sm:w-auto">
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1.5 border-neutral-300 text-neutral-700 hover:bg-neutral-100 cursor-pointer text-xs"
+                className="w-full sm:w-auto gap-1.5 border-neutral-300 text-neutral-700 hover:bg-neutral-100 cursor-pointer text-xs justify-center"
               >
                 <FileText className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Open Complaints Portal &rarr;</span>
               </Button>
             </Link>
-            <div className="flex items-center gap-1.5 p-1 bg-neutral-100 rounded-lg text-xs">
+            <div className="flex items-center gap-1 p-1 bg-neutral-100 rounded-lg text-xs w-full sm:w-auto justify-between sm:justify-start">
             <button
               type="button"
               onClick={() => setFilterStatus('ALL')}
-              className={`px-3 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+              className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer ${
                 filterStatus === 'ALL'
                   ? 'bg-white text-neutral-900 shadow-xs font-bold'
                   : 'text-neutral-600 hover:text-neutral-900'
@@ -2172,7 +2172,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
             <button
               type="button"
               onClick={() => setFilterStatus('ACTIVE')}
-              className={`px-3 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+              className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer ${
                 filterStatus === 'ACTIVE'
                   ? 'bg-white text-neutral-900 shadow-xs font-bold'
                   : 'text-neutral-600 hover:text-neutral-900'
@@ -2183,7 +2183,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
             <button
               type="button"
               onClick={() => setFilterStatus('RESOLVED')}
-              className={`px-3 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+              className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-md font-medium transition-colors cursor-pointer ${
                 filterStatus === 'RESOLVED'
                   ? 'bg-white text-neutral-900 shadow-xs font-bold'
                   : 'text-neutral-600 hover:text-neutral-900'
@@ -2270,11 +2270,13 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 shrink-0">
-                      <Badge status={statusBadge(c.status)}>{humanise(c.status)}</Badge>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-red-100 text-red-800 font-mono">
-                        {c.priority}
-                      </span>
+                    <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 sm:gap-3 w-full lg:w-auto shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-neutral-100">
+                      <div className="flex items-center gap-2">
+                        <Badge status={statusBadge(c.status)}>{humanise(c.status)}</Badge>
+                        <span className="text-xs font-bold px-2 py-0.5 rounded bg-red-100 text-red-800 font-mono">
+                          {c.priority}
+                        </span>
+                      </div>
 
                       <Button
                         size="sm"
@@ -2283,7 +2285,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
                           handleSelectComplaint(c);
                           onTabChange?.('track');
                         }}
-                        className="gap-1.5 cursor-pointer"
+                        className="gap-1.5 cursor-pointer text-xs"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>{isSelected ? 'Viewing Timeline' : 'View Milestones'}</span>

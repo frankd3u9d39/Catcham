@@ -2,17 +2,21 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Bell, LogOut, Search, Shield, User } from 'lucide-react';
+import { Bell, LogOut, Menu, Search, Shield, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/providers/auth-provider';
 import { useUnreadCount } from '@/hooks/use-platform';
 import { humanise } from '@/lib/format';
+import { cn } from '@/lib/utils';
+import { usePortalMode } from '@/hooks/use-portal-mode';
 
 export const Topbar: React.FC = () => {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { data: unread } = useUnreadCount();
+  const { isOfficerMode } = usePortalMode();
   const [query, setQuery] = useState('');
 
   const unreadCount = unread?.count ?? 0;
@@ -29,13 +33,50 @@ export const Topbar: React.FC = () => {
   }
 
   return (
-    <header className="h-16 bg-neutral-white border-b border-neutral-200 px-4 sm:px-6 flex items-center justify-between gap-4 sticky top-0 z-30">
-      <div className="flex items-center gap-3 min-w-0">
+    <header className="h-16 bg-neutral-white border-b border-neutral-200 px-3 sm:px-6 flex items-center justify-between gap-3 sm:gap-4 sticky top-0 z-30">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        {/* Mobile Hamburger Drawer Trigger */}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event('catcham:open-sidebar'))}
+          className="lg:hidden p-2 -ml-1 text-neutral-600 hover:text-neutral-950 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        {/* Mobile Brand Title */}
+        <Link href="/dashboard" className="lg:hidden flex items-center gap-2 min-w-0">
+          <Image
+            src="/logo.png"
+            alt="CATCHAM"
+            width={28}
+            height={28}
+            className="rounded-full bg-white border border-neutral-200 shrink-0"
+          />
+          <div className="min-w-0 leading-tight">
+            <span className="font-bold tracking-tight text-neutral-950 text-sm block truncate">
+              CATCHAM
+            </span>
+            <span
+              className={cn(
+                'text-[9px] font-mono font-bold block truncate',
+                isOfficerMode ? 'text-amber-600' : 'text-emerald-600'
+              )}
+            >
+              {isOfficerMode ? 'ADMIN COMMAND' : 'CITIZEN'}
+            </span>
+          </div>
+        </Link>
+
+        {/* Desktop Role Badge */}
         <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-50 border border-neutral-200 text-xs text-neutral-700">
-          <Shield className="w-4 h-4 text-brand-600 shrink-0" />
-          <span className="shrink-0">Role:</span>
+          <Shield className={cn('w-4 h-4 shrink-0', isOfficerMode ? 'text-amber-600' : 'text-emerald-600')} />
+          <span className="shrink-0">Portal View:</span>
           <strong className="text-neutral-900 font-semibold truncate">
-            {user ? user.roleCodes.map(humanise).join(', ') || 'No role assigned' : '—'}
+            {isOfficerMode
+              ? 'Super Admin & Agency Command'
+              : (user?.roleCodes?.map(humanise).join(', ') || 'Citizen Complainant')}
           </strong>
         </div>
         {user && user.agencyIds.length > 1 && (

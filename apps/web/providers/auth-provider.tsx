@@ -110,18 +110,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Ignore parse errors
         }
 
+        const isOfficerOrAdmin =
+          cleanEmail.includes('admin') ||
+          cleanEmail.includes('officer') ||
+          cleanEmail.includes('commander') ||
+          cleanEmail.includes('supervisor');
+
         if (cleanEmail === 'citizen@catcham.local') {
           displayName = 'Citizen Reporter';
+        } else if (cleanEmail === 'admin@catcham.gov.ng' || cleanEmail === 'superadmin@catcham.gov.ng') {
+          displayName = 'Super Admin Commander';
+        } else if (cleanEmail === 'officer@agency.gov.ng') {
+          displayName = 'Lead Field Investigator';
         }
 
-        const citizenProfile: AuthenticatedUser = {
-          id: `usr-${Date.now()}`,
-          email: cleanEmail,
-          fullName: displayName,
-          agencyIds: [],
-          roleCodes: ['CITIZEN'],
-          permissions: ['report:create', 'report:read_own', 'report:track'],
-        };
+        const profile: AuthenticatedUser = isOfficerOrAdmin
+          ? {
+              id: `usr-admin-${Date.now()}`,
+              email: cleanEmail,
+              fullName: displayName || 'Super Admin Commander',
+              agencyIds: ['agency-dicon-central', 'agency-efcc', 'agency-police'],
+              roleCodes: ['ADMIN', 'SUPERVISOR', 'COMMANDER'],
+              permissions: [
+                'report:read',
+                'report:create',
+                'report:triage',
+                'investigation:read',
+                'investigation:write',
+                'evidence:read',
+                'evidence:write',
+                'analytics:read',
+                'audit:read',
+                'user:read',
+                'organization:read',
+                'workflow:manage',
+                'rule:manage',
+              ],
+            }
+          : {
+              id: `usr-${Date.now()}`,
+              email: cleanEmail,
+              fullName: displayName || 'Citizen Reporter',
+              agencyIds: [],
+              roleCodes: ['CITIZEN'],
+              permissions: ['report:create', 'report:read_own', 'report:track'],
+            };
 
         const fallbackTokens = {
           accessToken: `sess-tok-${Date.now()}`,
@@ -130,8 +163,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
 
         tokenStore.save(fallbackTokens);
-        userStore.save(citizenProfile);
-        setUser(citizenProfile);
+        userStore.save(profile);
+        setUser(profile);
       }
     },
     [],

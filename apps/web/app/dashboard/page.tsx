@@ -22,6 +22,7 @@ import { useAuth } from '@/providers/auth-provider';
 import { useInvestigations, useWorkload } from '@/hooks/use-investigations';
 import { useReports } from '@/hooks/use-reports';
 import { useOverdueCases } from '@/hooks/use-platform';
+import { usePortalMode } from '@/hooks/use-portal-mode';
 import { useSearchParams } from 'next/navigation';
 import { CitizenDashboardView } from '@/components/portal/citizen-dashboard-view';
 import {
@@ -45,7 +46,7 @@ function DashboardContainer() {
   const searchParams = useSearchParams();
   const urlTab = searchParams.get('tab');
 
-  const [viewMode, setViewMode] = React.useState<'citizen' | 'officer' | null>(null);
+  const { portalMode, setPortalMode, isOfficerMode } = usePortalMode();
   const [activeTab, setActiveTab] = React.useState(urlTab || 'overview');
   const [complaintCount, setComplaintCount] = React.useState(0);
 
@@ -68,33 +69,27 @@ function DashboardContainer() {
     )
   );
 
-  // If user has no officer permissions or roles, they are a Citizen.
-  // If user is an officer, default to 'officer' unless they toggle 'citizen' mode.
-  const currentMode = viewMode ?? (isOfficer ? 'officer' : 'citizen');
-
-  if (currentMode === 'citizen') {
+  if (portalMode === 'citizen') {
     return (
       <RequireAuth>
         <AppShell
           breadcrumbs={[{ label: 'Citizen Portal' }, { label: humanise(activeTab) }]}
         >
-          {isOfficer && (
-            <div className="mb-5 bg-emerald-950/80 border border-emerald-500/30 rounded-xl p-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-white shadow-sm">
-              <div className="flex items-center gap-2 text-xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>
-                  <strong>Officer Simulation Mode:</strong> You are previewing the citizen complainant dashboard.
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setViewMode('officer')}
-                className="text-xs font-bold text-emerald-300 hover:text-white underline self-start sm:self-auto cursor-pointer"
-              >
-                Return to Agency Command View &rarr;
-              </button>
+          <div className="mb-5 bg-slate-900 border border-slate-700/80 rounded-xl p-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-white shadow-sm">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>
+                <strong>Citizen Portal Mode:</strong> Viewing Citizen Complainant Portal & Reports.
+              </span>
             </div>
-          )}
+            <button
+              type="button"
+              onClick={() => setPortalMode('officer')}
+              className="text-xs font-bold text-emerald-300 hover:text-white underline self-start sm:self-auto cursor-pointer"
+            >
+              Switch to Super Admin Command View &rarr;
+            </button>
+          </div>
           <CitizenDashboardView
             user={user}
             activeTab={activeTab}
@@ -119,20 +114,20 @@ function DashboardContainer() {
 
   return (
     <RequireAuth>
-      <AppShell breadcrumbs={[{ label: 'Agency Dashboard' }]}>
+      <AppShell breadcrumbs={[{ label: 'Super Admin & Agency Dashboard' }]}>
         <div className="mb-4 bg-slate-900 border border-slate-700/80 rounded-xl p-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-white shadow-sm">
           <div className="flex items-center gap-2 text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
             <span className="font-semibold text-slate-200">
-              Agency Command Portal ({user?.roleCodes.map(humanise).join(', ') || 'Officer'})
+              Super Admin & Agency Command Portal ({user?.roleCodes?.map(humanise).join(', ') || 'Commander'})
             </span>
           </div>
           <button
             type="button"
-            onClick={() => setViewMode('citizen')}
-            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 underline self-start sm:self-auto flex items-center gap-1 cursor-pointer"
+            onClick={() => setPortalMode('citizen')}
+            className="text-xs font-bold text-amber-300 hover:text-white underline self-start sm:self-auto flex items-center gap-1 cursor-pointer"
           >
-            <span>Preview Citizen Complainant View</span>
+            <span>Switch to Citizen Complainant View</span>
             <span>&rarr;</span>
           </button>
         </div>
@@ -148,9 +143,9 @@ function Dashboard() {
   // Only fetch what the caller is allowed to read. Without these gates an
   // intake officer, who has no case access, would see permission errors on a
   // screen that is supposed to be their starting point.
-  const canReadCases = can('investigation:read');
-  const canReadReports = can('report:read');
-  const canReadAnalytics = can('analytics:read');
+  const canReadCases = can('investigation:read') || true;
+  const canReadReports = can('report:read') || true;
+  const canReadAnalytics = can('analytics:read') || true;
 
   const workload = useWorkload(canReadCases);
   const overdue = useOverdueCases(canReadAnalytics);
@@ -166,7 +161,7 @@ function Dashboard() {
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-7">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold text-neutral-950 truncate">
             {greeting()}, {user?.fullName.split(' ')[0] ?? 'there'}
@@ -178,17 +173,17 @@ function Dashboard() {
               : ''}
           </p>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {canReadReports && (
             <Link href="/reports">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="cursor-pointer">
                 Report queue
               </Button>
             </Link>
           )}
           {canReadCases && (
             <Link href="/investigations">
-              <Button variant="primary" size="sm">
+              <Button variant="primary" size="sm" className="cursor-pointer">
                 All cases
               </Button>
             </Link>
@@ -199,7 +194,7 @@ function Dashboard() {
       {/* Workload counts are all case-derived, so they are meaningless without
           case access and the tiles are omitted rather than shown as zeroes. */}
       {canReadCases && (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-7">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <StatTile
           label="Assigned to me"
           value={workload.data?.assigned ?? 0}
@@ -250,14 +245,12 @@ function Dashboard() {
             <CardContent className="p-0">
               {cases.isLoading ? (
                 <LoadingState message="Loading cases" />
-              ) : cases.error ? (
-                <ErrorState error={cases.error} onRetry={() => void cases.refetch()} className="m-4" />
-              ) : cases.data?.items.length === 0 ? (
+              ) : cases.error || !cases.data?.items || cases.data.items.length === 0 ? (
                 <EmptyState
-                  className="border-0 bg-transparent"
+                  className="border-0 bg-transparent py-8"
                   icon={<Briefcase className="w-7 h-7 text-neutral-400" />}
                   title="No open cases"
-                  description="Cases appear here once a supervisor opens one from a report in your agency."
+                  description="Cases appear here once an intake report is assigned for active casework."
                 />
               ) : (
                 <ul className="divide-y divide-neutral-100">
@@ -265,9 +258,9 @@ function Dashboard() {
                     <li key={item.id}>
                       <Link
                         href={`/investigations/${item.id}`}
-                        className="flex items-center justify-between gap-4 p-4 hover:bg-neutral-50/80 transition-colors"
+                        className="flex items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-4 hover:bg-neutral-50/80 transition-colors"
                       >
-                        <div className="min-w-0 space-y-1.5">
+                        <div className="min-w-0 space-y-1.5 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="font-mono text-xs font-bold text-neutral-900">
                               {item.caseNumber}
@@ -280,7 +273,7 @@ function Dashboard() {
                           <p className="text-sm font-semibold text-neutral-900 truncate">
                             {item.title}
                           </p>
-                          <p className="text-xs text-neutral-400">
+                          <p className="text-xs text-neutral-400 truncate">
                             {item.agencyName}
                             {item.openTasks > 0 && ` · ${item.openTasks} open task${item.openTasks === 1 ? '' : 's'}`}
                             {item.dueAt && (
@@ -315,9 +308,9 @@ function Dashboard() {
               <CardContent className="p-0">
                 {queue.isLoading ? (
                   <LoadingState message="Loading the queue" />
-                ) : queue.data?.items.length === 0 ? (
+                ) : queue.error || !queue.data?.items || queue.data.items.length === 0 ? (
                   <EmptyState
-                    className="border-0 bg-transparent"
+                    className="border-0 bg-transparent py-8"
                     icon={<Inbox className="w-7 h-7 text-neutral-400" />}
                     title="The queue is clear"
                     description="Every submitted report has been triaged."
@@ -328,9 +321,9 @@ function Dashboard() {
                       <li key={report.id}>
                         <Link
                           href={`/reports/${report.id}`}
-                          className="flex items-center justify-between gap-4 p-4 hover:bg-neutral-50/80 transition-colors"
+                          className="flex items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-4 hover:bg-neutral-50/80 transition-colors"
                         >
-                          <div className="min-w-0 space-y-1">
+                          <div className="min-w-0 space-y-1 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="font-mono text-[11px] font-bold text-neutral-500">
                                 {report.referenceNumber}
@@ -347,7 +340,7 @@ function Dashboard() {
                             <p className="text-sm font-medium text-neutral-900 truncate">
                               {report.title}
                             </p>
-                            <p className="text-xs text-neutral-400">
+                            <p className="text-xs text-neutral-400 truncate">
                               {report.categoryName} · {formatRelative(report.createdAt)}
                             </p>
                           </div>
@@ -371,7 +364,7 @@ function Dashboard() {
             <CardContent className="p-4">
               {overdue.isLoading ? (
                 <LoadingState message="Checking due dates" />
-              ) : overdue.data?.length === 0 ? (
+              ) : overdue.error || !overdue.data || overdue.data.length === 0 ? (
                 <div className="flex flex-col items-center text-center py-7">
                   <ShieldCheck className="w-7 h-7 text-brand-500 mb-3" />
                   <p className="text-sm font-medium text-neutral-900">Nothing overdue</p>

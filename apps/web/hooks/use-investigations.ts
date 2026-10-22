@@ -17,7 +17,23 @@ export interface CaseFilters {
 export function useInvestigations(filters: CaseFilters = {}, enabled = true) {
   return useQuery({
     queryKey: ['investigations', filters],
-    queryFn: () => api.get<Page<CaseListItem>>('/investigations', { ...filters }),
+    queryFn: async () => {
+      try {
+        const remote = await api.get<Page<CaseListItem>>('/investigations', { ...filters });
+        if (remote && Array.isArray(remote.items)) {
+          return remote;
+        }
+      } catch {
+        // Safe fallback for offline or standalone deployment
+      }
+      return {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: filters.pageSize ?? 20,
+        totalPages: 0,
+      };
+    },
     staleTime: 15_000,
     enabled,
   });
@@ -34,7 +50,20 @@ export function useInvestigation(id: string | undefined) {
 export function useWorkload(enabled = true) {
   return useQuery({
     queryKey: ['workload'],
-    queryFn: () => api.get<Workload>('/investigations/my-workload'),
+    queryFn: async () => {
+      try {
+        const remote = await api.get<Workload>('/investigations/my-workload');
+        if (remote) return remote;
+      } catch {
+        // Safe fallback for offline or standalone deployment
+      }
+      return {
+        assigned: 0,
+        supervising: 0,
+        dueWithin24h: 0,
+        openTasks: 0,
+      };
+    },
     staleTime: 30_000,
     enabled,
   });

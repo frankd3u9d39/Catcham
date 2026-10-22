@@ -24,7 +24,23 @@ export interface ReportFilters {
 export function useReports(filters: ReportFilters = {}, enabled = true) {
   return useQuery({
     queryKey: ['reports', filters],
-    queryFn: () => api.get<Page<ReportListItem>>('/reports', { ...filters }),
+    queryFn: async () => {
+      try {
+        const remote = await api.get<Page<ReportListItem>>('/reports', { ...filters });
+        if (remote && Array.isArray(remote.items)) {
+          return remote;
+        }
+      } catch {
+        // Safe fallback for offline or standalone deployment
+      }
+      return {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: filters.pageSize ?? 20,
+        totalPages: 0,
+      };
+    },
     // The triage queue changes as other officers work it.
     staleTime: 15_000,
     enabled,

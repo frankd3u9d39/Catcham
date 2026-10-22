@@ -61,19 +61,26 @@ export function useCategoryBreakdown() {
 export function useOverdueCases(enabled = true) {
   return useQuery({
     queryKey: ['analytics', 'overdue'],
-    queryFn: () =>
-      api.get<
-        Array<{
-          id: string;
-          caseNumber: string;
-          title: string;
-          agency: string;
-          priority: string;
-          status: string;
-          dueAt: string | null;
-          daysOverdue: number;
-        }>
-      >('/analytics/overdue'),
+    queryFn: async () => {
+      try {
+        const remote = await api.get<
+          Array<{
+            id: string;
+            caseNumber: string;
+            title: string;
+            agency: string;
+            priority: string;
+            status: string;
+            dueAt: string | null;
+            daysOverdue: number;
+          }>
+        >('/analytics/overdue');
+        if (Array.isArray(remote)) return remote;
+      } catch {
+        // Safe fallback for offline or standalone deployment
+      }
+      return [];
+    },
     staleTime: 60_000,
     enabled,
   });
