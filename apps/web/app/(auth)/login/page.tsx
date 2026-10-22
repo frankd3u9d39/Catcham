@@ -4,7 +4,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InlineError } from '@/components/ui/error-state';
@@ -111,6 +111,43 @@ function LoginForm() {
               Sign In to Dashboard
             </Button>
           </form>
+
+          <div className="mt-4 p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Demo Citizen Access</span>
+              </p>
+              <p className="text-[11px] text-emerald-700">Explore citizen complainant portal</p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="primary"
+              onClick={async () => {
+                setIsSubmitting(true);
+                try {
+                  await login('citizen@catcham.local', 'ChangeMe123!');
+                  router.replace(next);
+                } catch (c) {
+                  setError(c);
+                } finally {
+                  setIsSubmitting(false);
+                }
+              }}
+              isLoading={isSubmitting}
+              className="text-xs font-bold shrink-0 bg-emerald-700 hover:bg-emerald-800"
+            >
+              1-Click Sign In
+            </Button>
+          </div>
+
+          <div className="mt-4 text-center text-xs text-neutral-600">
+            <span>New user? </span>
+            <Link href="/register" className="text-emerald-700 font-bold hover:underline">
+              Register Citizen Account
+            </Link>
+          </div>
 
           <div className="mt-6 pt-5 border-t border-neutral-200 text-xs text-neutral-500 space-y-2">
             <p>

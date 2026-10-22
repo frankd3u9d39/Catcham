@@ -51,6 +51,15 @@ export interface CredicorpApplication {
   appliedAt: string;
 }
 
+export interface FirestoreUser {
+  id?: string;
+  fullName: string;
+  email: string;
+  phoneNumber?: string;
+  role: string;
+  createdAt: string;
+}
+
 function toFirestoreFields(obj: Record<string, any>): Record<string, any> {
   const fields: Record<string, any> = {};
   for (const [key, value] of Object.entries(obj)) {
@@ -201,6 +210,60 @@ export const firestoreService = {
     } catch (err) {
       console.error('Failed to fetch Credicorp applications from Firestore:', err);
       return [];
+    }
+  },
+
+  /**
+   * Save / register a citizen user directly in Firestore
+   */
+  async saveUser(userData: {
+    fullName: string;
+    email: string;
+    phoneNumber?: string;
+  }): Promise<{ success: boolean; firestoreId?: string }> {
+    try {
+      const response = await fetch(`${FIRESTORE_BASE_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: toFirestoreFields({
+            fullName: userData.fullName,
+            email: userData.email.toLowerCase().trim(),
+            phoneNumber: userData.phoneNumber || '',
+            role: 'CITIZEN',
+            createdAt: new Date().toISOString(),
+          }),
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      const firestoreId = data.name?.split('/').pop();
+      return { success: response.ok, firestoreId };
+    } catch (err) {
+      console.warn('Firestore saveUser warning:', err);
+      return { success: false };
+    }
+  },
+
+  /**
+   * Get user by email from Firestore
+   */
+  async getUserByEmail(email: string): Promise<FirestoreUser | null> {
+    try {
+      const response = await fetch(`${FIRESTORE_BASE_URL}/users`);
+      if (!response.ok) return null;
+      const data = await response.json();
+      if (!data.documents) return null;
+
+      const users: FirestoreUser[] = data.documents.map((doc: any) => {
+        const id = doc.name?.split('/').pop();
+        const parsed = fromFirestoreFields(doc.fields || {});
+        return { id, ...parsed } as FirestoreUser;
+      });
+
+      return users.find((u) => u.email?.toLowerCase() === email.toLowerCase().trim()) || null;
+    } catch {
+      return null;
     }
   },
 };

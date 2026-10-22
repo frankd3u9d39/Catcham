@@ -10,8 +10,6 @@ import { Input } from '@/components/ui/input';
 import { InlineError } from '@/components/ui/error-state';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useAuth } from '@/providers/auth-provider';
-import { api, tokenStore } from '@/lib/api-client';
-import type { LoginResponse } from '@/lib/types';
 
 export default function RegisterPage() {
   return (
@@ -24,7 +22,7 @@ export default function RegisterPage() {
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, isLoading, login } = useAuth();
+  const { isAuthenticated, isLoading, login, register } = useAuth();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -48,28 +46,16 @@ function RegisterForm() {
     setIsSubmitting(true);
 
     try {
-      // Call public registration endpoint
-      const result = await api.public<LoginResponse>('/auth/register', {
-        method: 'POST',
-        body: {
-          fullName: fullName.trim(),
-          email: email.trim().toLowerCase(),
-          password,
-          phoneNumber: phoneNumber.trim() || undefined,
-        },
+      await register({
+        fullName: fullName.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        phoneNumber: phoneNumber.trim() || undefined,
       });
 
-      tokenStore.save(result.tokens);
-      // Reload or push to dashboard
-      window.location.href = next;
+      router.replace(next);
     } catch (caught) {
-      // If registration endpoint fails or account exists, attempt standard login
-      try {
-        await login(email.trim(), password);
-        router.replace(next);
-      } catch {
-        setError(caught);
-      }
+      setError(caught);
     } finally {
       setIsSubmitting(false);
     }

@@ -25,6 +25,27 @@ export const tokenStore = {
   clear(): void {
     write(ACCESS_TOKEN_KEY, null);
     write(REFRESH_TOKEN_KEY, null);
+    userStore.clear();
+  },
+};
+
+const USER_PROFILE_KEY = 'catcham.userProfile';
+
+export const userStore = {
+  get profile(): any | null {
+    const raw = read(USER_PROFILE_KEY);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  },
+  save(profile: any): void {
+    write(USER_PROFILE_KEY, JSON.stringify(profile));
+  },
+  clear(): void {
+    write(USER_PROFILE_KEY, null);
   },
 };
 
