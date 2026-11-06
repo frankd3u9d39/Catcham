@@ -4,7 +4,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle2, Lock, Shield, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, Lock, Shield, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InlineError } from '@/components/ui/error-state';
@@ -27,7 +27,10 @@ function RegisterForm() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,11 +48,18 @@ function RegisterForm() {
     setError(null);
     setIsSubmitting(true);
 
+    if (password !== confirmPassword) {
+      setError('Password and confirmation do not match.');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       await register({
         fullName: fullName.trim(),
         email: email.trim().toLowerCase(),
         password,
+        confirmPassword,
         phoneNumber: phoneNumber.trim() || undefined,
       });
 
@@ -103,15 +113,47 @@ function RegisterForm() {
               placeholder="e.g. tariq@example.com"
             />
 
-            <Input
-              label="Password (min 12 chars: uppercase, lowercase, digit)"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter secure password"
-            />
+            <div className="relative">
+              <Input
+                label="Password (min 12 chars: uppercase, lowercase, digit)"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                required
+                className="pr-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter secure password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+
+            <div className="relative">
+              <Input
+                label="Confirm Password"
+                type={showConfirmPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                required
+                className="pr-10"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter your password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+              >
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
 
             <Input
               label="Phone Number (Optional)"
@@ -136,7 +178,7 @@ function RegisterForm() {
               size="lg"
               className="w-full shadow-md"
               isLoading={isSubmitting}
-              disabled={fullName.length === 0 || email.length === 0 || password.length === 0}
+              disabled={fullName.length === 0 || email.length === 0 || password.length === 0 || confirmPassword.length === 0}
             >
               Complete Registration & Go to Dashboard
             </Button>

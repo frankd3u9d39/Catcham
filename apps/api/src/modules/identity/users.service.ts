@@ -103,6 +103,10 @@ export class UsersService {
   async register(dto: CreateUserDto): Promise<UserSummary> {
     const email = dto.email.toLowerCase();
 
+    if (dto.password !== dto.confirmPassword) {
+      throw new BadRequestException('Password and confirmation do not match.');
+    }
+
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) {
       throw new BadRequestException('An account with that email already exists.');

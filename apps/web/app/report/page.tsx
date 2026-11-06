@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, ArrowLeft, Check, Copy, Crosshair, Loader2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, Copy, Crosshair, FileSearch, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -235,6 +235,9 @@ export default function SubmitReportPage() {
   return (
     <AppShell breadcrumbs={[{ label: 'Citizen Portal', href: '/dashboard' }, { label: 'Submit New Report' }]}>
       <div className="max-w-2xl mx-auto py-2 sm:py-4 pb-12">
+        <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs text-neutral-500 hover:text-brand-600 mb-4">
+          <ArrowLeft className="w-3 h-3" /> Back to Dashboard
+        </Link>
         <h1 className="text-xl sm:text-2xl font-bold text-neutral-950">Submit a report</h1>
         <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
           Describe what you saw as specifically as you can: what happened, where, when,
@@ -410,6 +413,23 @@ export default function SubmitReportPage() {
 
           <InlineError error={error} />
 
+          {/* NIPOST postcode lookup info */}
+          <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 mb-5">
+            <div className="flex items-start gap-2">
+              <FileSearch className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold text-neutral-900">Need a Nigerian postcode?</p>
+                <p className="text-[10px] text-neutral-600 mt-0.5 leading-relaxed">
+                  Visit the official NIPOST portal at{' '}
+                  <a href="https://postcode.gov.ng" target="_blank" rel="noopener noreferrer" className="text-brand-600 font-medium underline hover:text-brand-700">
+                    postcode.gov.ng
+                  </a>
+                  . Enter your street address, area, state, or company name to map your location and display your 11-digit alphanumeric postcode.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <Button
             type="submit"
             variant="primary"
@@ -514,3 +534,5 @@ function Receipt({ receipt }: { receipt: SubmissionReceipt }) {
     </AppShell>
   );
 }
+
+

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
+  ArrowLeft,
   Clock,
   Eye,
   FilePlus,
@@ -189,6 +190,9 @@ export default function TrackReportPage() {
   return (
     <AppShell breadcrumbs={[{ label: 'Citizen Portal', href: '/dashboard' }, { label: 'Track Complaint' }]}>
       <div className="space-y-6 max-w-5xl pb-12">
+        <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs text-neutral-500 hover:text-brand-600 mb-4">
+          <ArrowLeft className="w-3 h-3" /> Back to Dashboard
+        </Link>
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

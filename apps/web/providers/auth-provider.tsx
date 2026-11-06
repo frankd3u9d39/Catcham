@@ -10,6 +10,7 @@ interface RegisterData {
   fullName: string;
   email: string;
   password?: string;
+  confirmPassword?: string;
   phoneNumber?: string;
 }
 
@@ -182,6 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             fullName: cleanName,
             email: cleanEmail,
             password: data.password || 'Catcham2026!Secure',
+            confirmPassword: data.confirmPassword || data.password || 'Catcham2026!Secure',
             phoneNumber: data.phoneNumber?.trim() || undefined,
           },
         });

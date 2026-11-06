@@ -19,7 +19,6 @@ import {
   FileText,
   GitBranch,
   Home,
-  Laptop,
   LayoutDashboard,
   LogOut,
   MapPin,
@@ -50,6 +49,12 @@ const OFFICER_SECTIONS: Array<{ title: string; items: NavItem[] }> = [
     title: 'Casework',
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className={ICON} /> },
+      {
+        label: 'Innovations',
+        href: '/innovations',
+        icon: <FileText className={ICON} />,
+        permission: 'report:read',
+      },
       {
         label: 'Reports',
         href: '/reports',
@@ -155,6 +160,11 @@ const CITIZEN_SECTIONS: Array<{ title: string; items: NavItem[] }> = [
         href: '/report',
         icon: <FilePlus className={ICON} />,
       },
+      {
+        label: 'Register Citizen Account',
+        href: '/register',
+        icon: <User className={ICON} />,
+      },
     ],
   },
   {
@@ -169,17 +179,6 @@ const CITIZEN_SECTIONS: Array<{ title: string; items: NavItem[] }> = [
         label: 'Whistleblower Vault',
         href: '/privacy',
         icon: <Shield className={ICON} />,
-      },
-    ],
-  },
-  {
-    title: 'Subscriber Benefits',
-    items: [
-      {
-        label: 'CREDICORP C.L.I.C.K.D',
-        href: '/credicorp',
-        badge: 'FG PARTNER',
-        icon: <Laptop className={ICON} />,
       },
     ],
   },

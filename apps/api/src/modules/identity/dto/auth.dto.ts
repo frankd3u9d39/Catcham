@@ -59,6 +59,13 @@ export class CreateUserDto {
   @IsOptional()
   @Matches(/^\+?[0-9]{7,15}$/, { message: 'phoneNumber must be 7-15 digits, optionally prefixed with +' })
   phoneNumber?: string;
+
+  @ApiProperty({
+    description: 'Confirm the password by entering it again.',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'Please confirm your password.' })
+  confirmPassword!: string;
 }
 
 export class UpdateUserDto {
